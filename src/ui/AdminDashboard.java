@@ -6,28 +6,34 @@ import java.awt.*;
 import java.awt.event.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
+import components.ModernJTable;
+import components.RoundedPanel;
+import components.RoundedPanelButton;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.block.EmptyBlock;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PiePlot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.renderer.category.BarRenderer;
+import org.jfree.chart.ui.HorizontalAlignment;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.general.DefaultPieDataset;
 
 public class AdminDashboard extends JFrame {
     // Color scheme
-    private Color primaryColor = new Color(79, 70, 229);    // Indigo
-    private Color lightPrimaryColor = new Color(99, 102, 241); // Light Indigo
-    private Color secondaryColor = new Color(249, 168, 212); // Pink
-    private Color accentColor = new Color(110, 231, 183);   // Teal
-    private Color backgroundColor = new Color(243, 244, 246); // Light Gray
-    private Color cardColor = Color.WHITE;
-    private Color textColor = new Color(31, 41, 55);       // Dark Gray
-    private Color redColor = new Color(239, 68, 68);       // Red
-    private Color yellowColor = new Color(245, 158, 11);   // Amber
-    private Color greenColor = new Color(16, 185, 129);    // Green
+    private final Color primaryColor = new Color(79, 70, 229);
+    private final Color lightPrimaryColor = new Color(99, 102, 241);
+    private final Color secondaryColor = new Color(249, 168, 212);
+    private final Color accentColor = new Color(110, 231, 183);
+    private final Color backgroundColor = new Color(243, 244, 246);
+    private final Color cardColor = Color.WHITE;
+    private final Color textColor = new Color(31, 41, 55);
+    private final Color redColor = new Color(239, 68, 68);
+    private final Color yellowColor = new Color(245, 158, 11);
+    private final Color greenColor = new Color(16, 185, 129);
 
     private JLabel timeLabel;
     private Timer timer;
@@ -75,7 +81,7 @@ public class AdminDashboard extends JFrame {
         }
 
         JLabel logoText = new JLabel("LibraryX");
-        logoText.setFont(new Font("Arial", Font.BOLD, 20));
+        logoText.setFont(new Font("Gilroy", Font.BOLD, 20));
         logoText.setForeground(Color.WHITE);
 
         logoPanel.add(logoIcon);
@@ -108,7 +114,7 @@ public class AdminDashboard extends JFrame {
         userInfo.setBackground(new Color(67, 56, 202));
 
         JLabel userName = new JLabel("Admin User");
-        userName.setFont(new Font("Arial", Font.BOLD, 14));
+        userName.setFont(new Font("Gilroy", Font.BOLD, 14));
         userName.setForeground(Color.WHITE);
 
         JLabel userRole = new JLabel("System Administrator");
@@ -146,7 +152,7 @@ public class AdminDashboard extends JFrame {
         iconLabel.setForeground(Color.WHITE);
 
         JLabel textLabel = new JLabel(text);
-        textLabel.setFont(new Font("Arial", isSelected ? Font.BOLD : Font.PLAIN, 14));
+        textLabel.setFont(new Font("Gilroy", isSelected ? Font.BOLD : Font.PLAIN, 14));
         textLabel.setForeground(Color.WHITE);
 
         menuItem.add(iconLabel);
@@ -171,7 +177,15 @@ public class AdminDashboard extends JFrame {
         return menuItem;
     }
 
+    JPanel spacer(){
+        final JPanel s = new JPanel();
+        s.setSize(16, 16);
+        s.setBackground(Color.white);
+        return s;
+    }
+
     private JPanel createMainPanel() {
+
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BorderLayout(15, 15));
         mainPanel.setBackground(backgroundColor);
@@ -182,7 +196,7 @@ public class AdminDashboard extends JFrame {
         topPanel.setBackground(backgroundColor);
 
         JLabel dashboardTitle = new JLabel("Admin Dashboard");
-        dashboardTitle.setFont(new Font("Arial", Font.BOLD, 22));
+        dashboardTitle.setFont(new Font("Gilroy", Font.BOLD, 22));
         dashboardTitle.setForeground(textColor);
 
         // User info and time
@@ -193,19 +207,9 @@ public class AdminDashboard extends JFrame {
         timeLabel.setFont(new Font("Arial", Font.PLAIN, 14));
         timeLabel.setForeground(textColor);
 
-        JButton notificationBtn = new JButton("🔔");
-        notificationBtn.setFont(new Font("Arial", Font.PLAIN, 16));
-        notificationBtn.setBorderPainted(false);
-        notificationBtn.setContentAreaFilled(false);
-        notificationBtn.setFocusPainted(false);
-        notificationBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        RoundedPanelButton notificationBtn = new RoundedPanelButton("🔔");
 
-        JButton profileBtn = new JButton("👤");
-        profileBtn.setFont(new Font("Arial", Font.PLAIN, 16));
-        profileBtn.setBorderPainted(false);
-        profileBtn.setContentAreaFilled(false);
-        profileBtn.setFocusPainted(false);
-        profileBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        RoundedPanelButton profileBtn = new RoundedPanelButton("👤");
 
         userPanel.add(timeLabel);
         userPanel.add(notificationBtn);
@@ -230,15 +234,10 @@ public class AdminDashboard extends JFrame {
         statsPanel.add(createStatCard("New Members", "123", "🆕", greenColor));
 
         // System status panel
-        JPanel statusPanel = new JPanel(new BorderLayout());
-        statusPanel.setBackground(cardColor);
-        statusPanel.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(229, 231, 235), 1, true),
-                BorderFactory.createEmptyBorder(15, 15, 15, 15)
-        ));
-        statusPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 100));
+        RoundedPanel statusPanel = new RoundedPanel();
+        statusPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
 
-        JPanel statusContent = new JPanel(new BorderLayout());
+        JPanel statusContent = new JPanel();
         statusContent.setBackground(cardColor);
 
         JLabel statusIcon = new JLabel("🟢");
@@ -248,7 +247,7 @@ public class AdminDashboard extends JFrame {
         statusTextPanel.setBackground(cardColor);
 
         JLabel statusTitle = new JLabel("System Status");
-        statusTitle.setFont(new Font("Arial", Font.BOLD, 16));
+        statusTitle.setFont(new Font("Gilroy", Font.BOLD, 16));
         statusTitle.setForeground(textColor);
 
         JLabel statusDesc = new JLabel("All systems operational - Last checked: 10:25 AM");
@@ -258,16 +257,13 @@ public class AdminDashboard extends JFrame {
         statusTextPanel.add(statusTitle);
         statusTextPanel.add(statusDesc);
 
-        JButton viewLogsButton = new JButton("View Logs");
-        viewLogsButton.setBackground(primaryColor);
-        viewLogsButton.setForeground(Color.WHITE);
-        viewLogsButton.setBorder(BorderFactory.createEmptyBorder(8, 15, 8, 15));
-        viewLogsButton.setFocusPainted(false);
-        viewLogsButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        RoundedPanelButton viewLogsButton = new RoundedPanelButton("View Logs");
 
-        statusContent.add(statusIcon, BorderLayout.WEST);
-        statusContent.add(statusTextPanel, BorderLayout.CENTER);
-        statusContent.add(viewLogsButton, BorderLayout.EAST);
+        statusContent.add(statusIcon);
+        statusContent.add(spacer());
+        statusContent.add(statusTextPanel);
+        statusContent.add(spacer());
+        statusContent.add(viewLogsButton);
 
         statusPanel.add(statusContent, BorderLayout.CENTER);
 
@@ -276,15 +272,11 @@ public class AdminDashboard extends JFrame {
         chartsPanel.setBackground(backgroundColor);
 
         // Books by category chart
-        JPanel categoryPanel = new JPanel(new BorderLayout());
-        categoryPanel.setBackground(cardColor);
-        categoryPanel.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(229, 231, 235), 1, true),
-                BorderFactory.createEmptyBorder(15, 15, 15, 15)
-        ));
+        JPanel categoryPanel = new RoundedPanel();
+        categoryPanel.setLayout(new BoxLayout(categoryPanel, BoxLayout.Y_AXIS));
 
         JLabel categoryTitle = new JLabel("Books by Category");
-        categoryTitle.setFont(new Font("Arial", Font.BOLD, 16));
+        categoryTitle.setFont(new Font("Gilroy", Font.BOLD, 16));
 
         // Create the pie chart
         DefaultPieDataset pieDataset = new DefaultPieDataset();
@@ -314,19 +306,16 @@ public class AdminDashboard extends JFrame {
         ChartPanel pieChartPanel = new ChartPanel(pieChart);
         pieChartPanel.setPreferredSize(new Dimension(300, 200));
 
-        categoryPanel.add(categoryTitle, BorderLayout.NORTH);
-        categoryPanel.add(pieChartPanel, BorderLayout.CENTER);
+        categoryPanel.add(categoryTitle);
+        categoryPanel.add(spacer());
+        categoryPanel.add(pieChartPanel);
 
         // Monthly activity chart
-        JPanel activityPanel = new JPanel(new BorderLayout());
-        activityPanel.setBackground(cardColor);
-        activityPanel.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(229, 231, 235), 1, true),
-                BorderFactory.createEmptyBorder(15, 15, 15, 15)
-        ));
+        JPanel activityPanel = new RoundedPanel();
+        activityPanel.setLayout(new BoxLayout(activityPanel, BoxLayout.Y_AXIS));
 
         JLabel activityTitle = new JLabel("Monthly Activity");
-        activityTitle.setFont(new Font("Arial", Font.BOLD, 16));
+        activityTitle.setFont(new Font("Gilroy", Font.BOLD, 16));
 
         // Create the dataset and chart
         DefaultCategoryDataset barDataset = new DefaultCategoryDataset();
@@ -368,32 +357,24 @@ public class AdminDashboard extends JFrame {
         ChartPanel barChartPanel = new ChartPanel(barChart);
         barChartPanel.setPreferredSize(new Dimension(300, 200));
 
-        activityPanel.add(activityTitle, BorderLayout.NORTH);
-        activityPanel.add(barChartPanel, BorderLayout.CENTER);
+        activityPanel.add(activityTitle);
+        activityPanel.add(spacer());
+        activityPanel.add(barChartPanel);
 
         chartsPanel.add(categoryPanel);
         chartsPanel.add(activityPanel);
 
         // Recent activity table
-        JPanel recentPanel = new JPanel(new BorderLayout());
-        recentPanel.setBackground(cardColor);
-        recentPanel.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(229, 231, 235), 1, true),
-                BorderFactory.createEmptyBorder(15, 15, 15, 15)
-        ));
+        JPanel recentPanel = new RoundedPanel();
+        recentPanel.setLayout(new BoxLayout(recentPanel, BoxLayout.Y_AXIS));
 
         JPanel recentHeader = new JPanel(new BorderLayout());
         recentHeader.setBackground(cardColor);
 
         JLabel recentTitle = new JLabel("Recent System Activity");
-        recentTitle.setFont(new Font("Arial", Font.BOLD, 16));
+        recentTitle.setFont(new Font("Gilroy", Font.BOLD, 16));
 
-        JButton viewAllButton = new JButton("View All");
-        viewAllButton.setBackground(primaryColor);
-        viewAllButton.setForeground(Color.WHITE);
-        viewAllButton.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
-        viewAllButton.setFocusPainted(false);
-        viewAllButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        RoundedPanelButton viewAllButton = new RoundedPanelButton("View All");
 
         recentHeader.add(recentTitle, BorderLayout.WEST);
         recentHeader.add(viewAllButton, BorderLayout.EAST);
@@ -409,15 +390,9 @@ public class AdminDashboard extends JFrame {
         };
 
         DefaultTableModel model = new DefaultTableModel(data, columnNames);
-        JTable table = new JTable(model);
-        table.setRowHeight(30);
-        table.setShowVerticalLines(false);
-        table.setShowHorizontalLines(true);
-        table.setGridColor(new Color(229, 231, 235));
-        table.getTableHeader().setBackground(new Color(243, 244, 246));
-        table.getTableHeader().setFont(new Font("Arial", Font.BOLD, 12));
+        ModernJTable table = new ModernJTable(model);
+        table.setCornerRadius(8);
 
-        // Set custom renderer for the Status column
         table.getColumnModel().getColumn(4).setCellRenderer(new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
@@ -478,18 +453,12 @@ public class AdminDashboard extends JFrame {
     }
 
     private JPanel createStatCard(String title, String value, String icon, Color color) {
-        JPanel card = new JPanel(new BorderLayout());
-        card.setBackground(cardColor);
-        card.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(229, 231, 235), 1, true),
-                BorderFactory.createEmptyBorder(15, 15, 15, 15)
-        ));
-
-        JPanel iconPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        RoundedPanel card = RoundedPanel.RoundedCard();
+        JPanel iconPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 16, 0));
         iconPanel.setBackground(cardColor);
 
         JLabel iconLabel = new JLabel(icon);
-        iconLabel.setFont(new Font("Arial", Font.PLAIN, 22));
+        iconLabel.setFont(new Font("Arial", Font.PLAIN, 32));
         iconLabel.setForeground(color);
         iconPanel.add(iconLabel);
 
@@ -497,7 +466,7 @@ public class AdminDashboard extends JFrame {
         contentPanel.setBackground(cardColor);
 
         JLabel valueLabel = new JLabel(value);
-        valueLabel.setFont(new Font("Arial", Font.BOLD, 28));
+        valueLabel.setFont(new Font("Gilroy", Font.BOLD, 20));
         valueLabel.setForeground(textColor);
 
         JLabel titleLabel = new JLabel(title);
@@ -513,38 +482,19 @@ public class AdminDashboard extends JFrame {
         return card;
     }
 
-    private JPanel createActionButton(String title, String icon, Color color) {
-        JPanel button = new JPanel(new BorderLayout());
-        button.setBackground(cardColor);
-        button.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(229, 231, 235), 1, true),
-                BorderFactory.createEmptyBorder(10, 15, 10, 15)
-        ));
-        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+    private JPanel createActionButton (String title, String icon, Color color) {
+        JPanel button = new RoundedPanelButton(title, icon, color, e -> {
+            System.out.println("Button Pressed");
+        });
+        button.setAlignmentY(Component.CENTER_ALIGNMENT);
 
         JLabel iconLabel = new JLabel(icon);
         iconLabel.setFont(new Font("Arial", Font.PLAIN, 20));
         iconLabel.setForeground(color);
 
         JLabel titleLabel = new JLabel(title);
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 14));
+        titleLabel.setFont(new Font("Gilroy", Font.BOLD, 14));
         titleLabel.setForeground(textColor);
-
-        button.add(iconLabel, BorderLayout.WEST);
-        button.add(titleLabel, BorderLayout.CENTER);
-
-        // Add hover effect
-        button.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                button.setBackground(new Color(243, 244, 246));
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                button.setBackground(cardColor);
-            }
-        });
 
         return button;
     }
