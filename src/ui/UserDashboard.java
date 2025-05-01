@@ -1,10 +1,19 @@
 package ui;
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
+import components.RoundedPanel;
+import components.RoundedPanelButton;
+import javafx.scene.control.RadioButton;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -15,22 +24,28 @@ import org.jfree.data.category.DefaultCategoryDataset;
 
 public class UserDashboard extends JFrame {
     // Color scheme
-    private Color primaryColor = new Color(79, 70, 229);    // Indigo
-    private Color lightPrimaryColor = new Color(99, 102, 241); // Light Indigo
-    private Color secondaryColor = new Color(249, 168, 212); // Pink
-    private Color accentColor = new Color(110, 231, 183);   // Teal
-    private Color backgroundColor = new Color(243, 244, 246); // Light Gray
-    private Color cardColor = Color.WHITE;
-    private Color textColor = new Color(31, 41, 55);       // Dark Gray
+    private final Color primaryColor = new Color(79, 70, 229);
+    private final Color lightPrimaryColor = new Color(99, 102, 241);
+    private final Color secondaryColor = new Color(249, 168, 212);
+    private final Color accentColor = new Color(110, 231, 183);
+    private final Color backgroundColor = new Color(243, 244, 246);
+    private final Color cardColor = Color.WHITE;
+    private final Color textColor = new Color(31, 41, 55);
 
     private JLabel timeLabel;
-    private Timer timer;
 
     public UserDashboard() {
         setTitle("LibraryX - User Dashboard");
-        setSize(1200, 700);
+        setSize(new Dimension(1200, 700));
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
+        try {// Create a list of different sized icons
+            java.util.List<Image> icons = new java.util.ArrayList<>();
+            icons.add(new ImageIcon("assets/logo.png").getImage());
+            icons.add(new ImageIcon("assets/logo.png").getImage());
+            icons.add(new ImageIcon("assets/logo.png").getImage());
+            setIconImages(icons); // Set multiple icons
+        }catch (Exception e) {}
 
         // Set the background color
         getContentPane().setBackground(backgroundColor);
@@ -59,8 +74,15 @@ public class UserDashboard extends JFrame {
         logoPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
         JLabel logoIcon;
-        if(getClass().getResource("/icons/book_icon.png") != null) {
-            logoIcon = new JLabel(new ImageIcon(getClass().getResource("/icons/book_icon.png")));
+        BufferedImage bufferedImage = null;
+        try {
+            bufferedImage = ImageIO.read(new File("assets/logo.png"));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        if(bufferedImage != null) {
+            ImageIcon image = new ImageIcon(bufferedImage.getScaledInstance(32, 32, Image.SCALE_DEFAULT));
+            logoIcon = new JLabel(image);
         }
         else{
             logoIcon = new JLabel("📚");
@@ -165,9 +187,13 @@ public class UserDashboard extends JFrame {
         return menuItem;
     }
 
+    Component spacer(){
+        return Box.createRigidArea(new Dimension(16, 16));
+    }
+
     private JPanel createMainPanel() {
         JPanel mainPanel = new JPanel();
-        mainPanel.setLayout(new BorderLayout(15, 15));
+        mainPanel.setLayout(new BorderLayout(16, 12));
         mainPanel.setBackground(backgroundColor);
         mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
@@ -176,8 +202,9 @@ public class UserDashboard extends JFrame {
         topPanel.setBackground(backgroundColor);
 
         // Search field
-        JTextField searchField = new JTextField("Search for books, authors...");
+        JTextField searchField = new JTextField();
         searchField.setPreferredSize(new Dimension(300, 35));
+        searchField.setToolTipText("Search for books, authors...");
         searchField.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(new Color(209, 213, 219), 1, true),
                 BorderFactory.createEmptyBorder(5, 10, 5, 10)));
@@ -219,12 +246,11 @@ public class UserDashboard extends JFrame {
         statsPanel.add(createStatCard("Reading Streak", "15 days", "🔥", secondaryColor));
 
         // Recommendations panel
-        JPanel recPanel = new JPanel(new BorderLayout());
-        recPanel.setBackground(primaryColor);
-        recPanel.setBorder(new EmptyBorder(15, 15, 15, 15));
-        recPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 120));
+        JPanel recPanel = new RoundedPanel(primaryColor);
+        recPanel.setLayout(new BorderLayout());
 
-        JPanel recContent = new JPanel(new BorderLayout());
+        JPanel recContent = new JPanel();
+        recContent.setLayout(new BoxLayout(recContent, BoxLayout.X_AXIS));
         recContent.setBackground(primaryColor);
 
         JLabel recIcon = new JLabel("✨");
@@ -245,26 +271,20 @@ public class UserDashboard extends JFrame {
         recTextPanel.add(recTitle);
         recTextPanel.add(recDesc);
 
-        JButton viewButton = new JButton("Check it out");
-        viewButton.setBackground(new Color(255, 255, 255, 50));
-        viewButton.setForeground(Color.WHITE);
-        viewButton.setBorder(BorderFactory.createEmptyBorder(8, 15, 8, 15));
-        viewButton.setFocusPainted(false);
-        viewButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        RoundedPanelButton viewButton = new RoundedPanelButton("Check it out", "", Color.black, e -> {});
+        viewButton.setPreferredSize(new Dimension(160, 40));
 
-        recContent.add(recIcon, BorderLayout.WEST);
-        recContent.add(recTextPanel, BorderLayout.CENTER);
-        recContent.add(viewButton, BorderLayout.EAST);
+        recContent.add(recIcon);
+        recContent.add(spacer());
+        recContent.add(recTextPanel);
+        recContent.add(Box.createRigidArea(new Dimension(500, 8)));
+        recContent.add(viewButton);
 
-        recPanel.add(recContent, BorderLayout.CENTER);
+        recPanel.add(recContent);
 
         // Reading activity chart
-        JPanel chartPanel = new JPanel(new BorderLayout());
-        chartPanel.setBackground(cardColor);
-        chartPanel.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(229, 231, 235), 1, true),
-                BorderFactory.createEmptyBorder(15, 15, 15, 15)
-        ));
+        JPanel chartPanel = RoundedPanel.RoundedCard();
+        chartPanel.setLayout(new BoxLayout(chartPanel, BoxLayout.Y_AXIS));
 
         JLabel chartTitle = new JLabel("Your Reading Activity");
         chartTitle.setFont(new Font("Arial", Font.BOLD, 16));
@@ -307,35 +327,47 @@ public class UserDashboard extends JFrame {
         chartPanel.add(chartComponent, BorderLayout.CENTER);
 
         // Recent books panel
-        JPanel recentBooksPanel = new JPanel(new BorderLayout());
-        recentBooksPanel.setBackground(cardColor);
-        recentBooksPanel.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(229, 231, 235), 1, true),
-                BorderFactory.createEmptyBorder(15, 15, 15, 15)
-        ));
+        JPanel recentBooksPanel = new RoundedPanel();
+        recentBooksPanel.setLayout(new BoxLayout(recentBooksPanel, BoxLayout.Y_AXIS));
 
         JLabel recentTitle = new JLabel("Recently Borrowed Books");
         recentTitle.setFont(new Font("Arial", Font.BOLD, 16));
 
-        JPanel booksGrid = new JPanel(new GridLayout(1, 3, 15, 0));
+        JPanel booksGrid = new JPanel(new GridLayout(1, 3, 16, 0));
         booksGrid.setBackground(cardColor);
 
-        booksGrid.add(createBookCard("To Kill a Mockingbird", "Harper Lee", "Due: May 15, 2025"));
-        booksGrid.add(createBookCard("1984", "George Orwell", "Due: May 20, 2025"));
-        booksGrid.add(createBookCard("The Great Gatsby", "F. Scott Fitzgerald", "Due: May 22, 2025"));
+        int bookCardWidth = booksGrid.getWidth()/3 - 48;
+        booksGrid.add(createBookCard(
+                "To Kill a Mockingbird",
+                "Harper Lee",
+                "https://viewthroughmywindow.com/wp-content/uploads/2019/05/Mocking-Bird.jpg",
+                "Due: May 15, 2025"
+                ));
+        booksGrid.add(createBookCard(
+                "1984",
+                "George Orwell",
+                "https://miro.medium.com/v2/resize:fit:800/1*g8s4n-puPV3y-F2b7ilJ_A.jpeg",
+                "Due: May 20, 2025"
+        ));
+        booksGrid.add(createBookCard(
+                "The Great Gatsby",
+                "F. Scott Fitzgerald",
+                "https://rukminim2.flixcart.com/image/850/1000/l4fxh8w0/book/z/0/y/the-great-gatsby-a-novel-original-imagfbmgfsan3gjg.jpeg",
+                "Due: May 22, 2025"
+        ));
 
-        recentBooksPanel.add(recentTitle, BorderLayout.NORTH);
-        recentBooksPanel.add(booksGrid, BorderLayout.CENTER);
+        recentBooksPanel.add(recentTitle);
+        recentBooksPanel.add(spacer());
+        recentBooksPanel.add(booksGrid);
 
-        // Add all components to the center panel
         centerPanel.add(topPanel);
-        centerPanel.add(Box.createRigidArea(new Dimension(0, 20)));
+        centerPanel.add(spacer());
         centerPanel.add(statsPanel);
-        centerPanel.add(Box.createRigidArea(new Dimension(0, 20)));
+        centerPanel.add(spacer());
         centerPanel.add(recPanel);
-        centerPanel.add(Box.createRigidArea(new Dimension(0, 20)));
+        centerPanel.add(spacer());
         centerPanel.add(chartPanel);
-        centerPanel.add(Box.createRigidArea(new Dimension(0, 20)));
+        centerPanel.add(spacer());
         centerPanel.add(recentBooksPanel);
 
         // Add center panel to main panel
@@ -348,18 +380,12 @@ public class UserDashboard extends JFrame {
     }
 
     private JPanel createStatCard(String title, String value, String icon, Color color) {
-        JPanel card = new JPanel(new BorderLayout());
-        card.setBackground(cardColor);
-        card.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(229, 231, 235), 1, true),
-                BorderFactory.createEmptyBorder(15, 15, 15, 15)
-        ));
-
-        JPanel iconPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        RoundedPanel card = RoundedPanel.RoundedCard();
+        JPanel iconPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 16, 0));
         iconPanel.setBackground(cardColor);
 
         JLabel iconLabel = new JLabel(icon);
-        iconLabel.setFont(new Font("Arial", Font.PLAIN, 22));
+        iconLabel.setFont(new Font("Arial", Font.PLAIN, 32));
         iconLabel.setForeground(color);
         iconPanel.add(iconLabel);
 
@@ -367,7 +393,7 @@ public class UserDashboard extends JFrame {
         contentPanel.setBackground(cardColor);
 
         JLabel valueLabel = new JLabel(value);
-        valueLabel.setFont(new Font("Arial", Font.BOLD, 28));
+        valueLabel.setFont(new Font("Gilroy", Font.BOLD, 20));
         valueLabel.setForeground(textColor);
 
         JLabel titleLabel = new JLabel(title);
@@ -383,18 +409,48 @@ public class UserDashboard extends JFrame {
         return card;
     }
 
-    private JPanel createBookCard(String title, String author, String dueDate) {
-        JPanel card = new JPanel();
+    private JPanel createBookCard(String title, String author, String bookImage, String dueDate) {
+        RoundedPanel card = new RoundedPanel(12, new Color(220, 220, 220), 1, new Color(248, 248, 248));
         card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
-        card.setBackground(backgroundColor);
-        card.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(229, 231, 235), 1, true),
-                BorderFactory.createEmptyBorder(15, 15, 15, 15)
-        ));
 
-        JLabel bookIcon = new JLabel("📗");
-        bookIcon.setFont(new Font("Arial", Font.PLAIN, 24));
-        bookIcon.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        JLabel bookIcon;
+        if(bookImage != ""){
+            bookIcon = new JLabel("Loading");
+
+            Thread imageLoader = new Thread(() -> {
+                try {
+                    URL url = new URL(bookImage);
+                    BufferedImage image = ImageIO.read(url);
+                    if (image != null) {
+                        int width = 100;
+                        Image scaledImage = image.getScaledInstance(width, width*3/2, Image.SCALE_SMOOTH);
+                        Icon icon = new ImageIcon(scaledImage);
+                        // Update the JLabel on the Event Dispatch Thread (EDT)
+                        SwingUtilities.invokeLater(() -> {
+                            bookIcon.setText(""); // Remove "Loading..." text
+                            bookIcon.setIcon(icon);
+                            pack(); // Adjust frame size after loading
+                        });
+                    } else {
+                        SwingUtilities.invokeLater(() -> {
+                            bookIcon.setText("Error: Could not load image.");
+                        });
+                    }
+                } catch (IOException e) {
+                    SwingUtilities.invokeLater(() -> {
+                        bookIcon.setText("Error: " + e.getMessage());
+                    });
+                    e.printStackTrace();
+                }
+            });
+
+            imageLoader.start();
+        }else{
+            bookIcon = new JLabel("📗");
+            bookIcon.setFont(new Font("Arial", Font.PLAIN, 24));
+            bookIcon.setAlignmentX(Component.LEFT_ALIGNMENT);
+        }
 
         JLabel titleLabel = new JLabel(title);
         titleLabel.setFont(new Font("Arial", Font.BOLD, 14));
@@ -412,18 +468,18 @@ public class UserDashboard extends JFrame {
         dueDateLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         card.add(bookIcon);
-        card.add(Box.createRigidArea(new Dimension(0, 10)));
+        card.add(spacer());
         card.add(titleLabel);
-        card.add(Box.createRigidArea(new Dimension(0, 5)));
+        card.add(Box.createRigidArea(new Dimension(0, 4)));
         card.add(authorLabel);
-        card.add(Box.createRigidArea(new Dimension(0, 15)));
+        card.add(spacer());
         card.add(dueDateLabel);
 
         return card;
     }
 
     private void initializeTimer() {
-        timer = new Timer(1000, new ActionListener() {
+        Timer timer = new Timer(1000, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 SimpleDateFormat sdf = new SimpleDateFormat("hh:mm a | MMM dd, yyyy");
