@@ -1,19 +1,7 @@
-package ui;
-import javax.imageio.ImageIO;
-import javax.swing.*;
-import javax.swing.border.*;
-import java.awt.*;
-import java.awt.event.*;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+package screens.user_dashboard;
 
 import components.RoundedPanel;
 import components.RoundedPanelButton;
-import javafx.scene.control.RadioButton;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -22,192 +10,44 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.renderer.category.BarRenderer;
 import org.jfree.data.category.DefaultCategoryDataset;
 
-public class UserDashboard extends JFrame {
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+public class MainPanel extends JPanel {
+
+    JLabel timeLabel;
+
     // Color scheme
     private final Color primaryColor = new Color(79, 70, 229);
-    private final Color lightPrimaryColor = new Color(99, 102, 241);
     private final Color secondaryColor = new Color(249, 168, 212);
     private final Color accentColor = new Color(110, 231, 183);
     private final Color backgroundColor = new Color(243, 244, 246);
     private final Color cardColor = Color.WHITE;
     private final Color textColor = new Color(31, 41, 55);
 
-    private JLabel timeLabel;
-
-    public UserDashboard() {
-        setTitle("LibraryX - User Dashboard");
-        setSize(new Dimension(1200, 700));
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLocationRelativeTo(null);
-        try {// Create a list of different sized icons
-            java.util.List<Image> icons = new java.util.ArrayList<>();
-            icons.add(new ImageIcon("assets/logo.png").getImage());
-            icons.add(new ImageIcon("assets/logo.png").getImage());
-            icons.add(new ImageIcon("assets/logo.png").getImage());
-            setIconImages(icons); // Set multiple icons
-        }catch (Exception e) {}
-
-        // Set the background color
-        getContentPane().setBackground(backgroundColor);
-
-        // Create main layout
-        setLayout(new BorderLayout());
-
-        // Add components
-        add(createSidebar(), BorderLayout.WEST);
-        add(createMainPanel(), BorderLayout.CENTER);
-
-        // Initialize and start the timer for the clock
-        initializeTimer();
-
-        setVisible(true);
-    }
-
-    private JPanel createSidebar() {
-        JPanel sidebar = new JPanel(new BorderLayout());
-        sidebar.setPreferredSize(new Dimension(220, getHeight()));
-        sidebar.setBackground(primaryColor);
-
-        // Logo panel
-        JPanel logoPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
-        logoPanel.setBackground(primaryColor);
-        logoPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-
-        JLabel logoIcon;
-        BufferedImage bufferedImage = null;
-        try {
-            bufferedImage = ImageIO.read(new File("assets/logo.png"));
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        if(bufferedImage != null) {
-            ImageIcon image = new ImageIcon(bufferedImage.getScaledInstance(32, 32, Image.SCALE_DEFAULT));
-            logoIcon = new JLabel(image);
-        }
-        else{
-            logoIcon = new JLabel("📚");
-            logoIcon.setFont(new Font("Arial", Font.PLAIN, 24));
-            logoIcon.setForeground(Color.WHITE);
-        }
-
-        JLabel logoText = new JLabel("LibraryX");
-        logoText.setFont(new Font("Arial", Font.BOLD, 20));
-        logoText.setForeground(Color.WHITE);
-
-        logoPanel.add(logoIcon);
-        logoPanel.add(logoText);
-
-        // Menu panel
-        JPanel menuPanel = new JPanel();
-        menuPanel.setLayout(new BoxLayout(menuPanel, BoxLayout.Y_AXIS));
-        menuPanel.setBackground(primaryColor);
-
-        // Create menu items
-        String[] menuItems = {"Home", "Search Books", "My Borrowings", "Reading History", "Favorites", "Notifications", "Settings"};
-        String[] menuIcons = {"🏠", "🔍", "📚", "⏱️", "⭐", "🔔", "⚙️"};
-
-        for (int i = 0; i < menuItems.length; i++) {
-            JPanel menuItem = createMenuItem(menuItems[i], menuIcons[i], i == 0);
-            menuPanel.add(menuItem);
-        }
-
-        // Profile panel
-        JPanel profilePanel = new JPanel(new BorderLayout());
-        profilePanel.setBackground(new Color(67, 56, 202)); // Darker indigo
-        profilePanel.setBorder(BorderFactory.createEmptyBorder(10, 15, 10, 15));
-
-        JLabel userIcon = new JLabel("👤");
-        userIcon.setFont(new Font("Arial", Font.PLAIN, 20));
-        userIcon.setForeground(Color.WHITE);
-
-        JPanel userInfo = new JPanel(new GridLayout(2, 1));
-        userInfo.setBackground(new Color(67, 56, 202));
-
-        JLabel userName = new JLabel("John Doe");
-        userName.setFont(new Font("Arial", Font.BOLD, 14));
-        userName.setForeground(Color.WHITE);
-
-        JLabel userRole = new JLabel("Student");
-        userRole.setFont(new Font("Arial", Font.PLAIN, 12));
-        userRole.setForeground(new Color(199, 210, 254)); // Light indigo
-
-        userInfo.add(userName);
-        userInfo.add(userRole);
-
-        profilePanel.add(userIcon, BorderLayout.WEST);
-        profilePanel.add(userInfo, BorderLayout.CENTER);
-
-        // Add all components to sidebar
-        sidebar.add(logoPanel, BorderLayout.NORTH);
-        sidebar.add(menuPanel, BorderLayout.CENTER);
-        sidebar.add(profilePanel, BorderLayout.SOUTH);
-
-        return sidebar;
-    }
-
-    private JPanel createMenuItem(String text, String icon, boolean isSelected) {
-        JPanel menuItem = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 10));
-        menuItem.setMaximumSize(new Dimension(Integer.MAX_VALUE, 45));
-
-        if (isSelected) {
-            menuItem.setBackground(lightPrimaryColor);
-        } else {
-            menuItem.setBackground(primaryColor);
-        }
-
-        menuItem.setCursor(new Cursor(Cursor.HAND_CURSOR));
-
-        JLabel iconLabel = new JLabel(icon);
-        iconLabel.setFont(new Font("Arial", Font.PLAIN, 16));
-        iconLabel.setForeground(Color.WHITE);
-
-        JLabel textLabel = new JLabel(text);
-        textLabel.setFont(new Font("Arial", isSelected ? Font.BOLD : Font.PLAIN, 14));
-        textLabel.setForeground(Color.WHITE);
-
-        menuItem.add(iconLabel);
-        menuItem.add(textLabel);
-
-        menuItem.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                if (!isSelected) {
-                    menuItem.setBackground(new Color(79, 70, 229, 200));
-                }
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                if (!isSelected) {
-                    menuItem.setBackground(primaryColor);
-                }
-            }
-        });
-
-        return menuItem;
-    }
-
     Component spacer(){
         return Box.createRigidArea(new Dimension(16, 16));
     }
 
-    private JPanel createMainPanel() {
+    public MainPanel() {
         JPanel mainPanel = new JPanel();
-        mainPanel.setLayout(new BorderLayout(16, 12));
-        mainPanel.setBackground(backgroundColor);
-        mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        setLayout(new BorderLayout(16, 12));
+        setBackground(backgroundColor);
+        setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
         // Top panel with search and user info
         JPanel topPanel = new JPanel(new BorderLayout(15, 0));
         topPanel.setBackground(backgroundColor);
 
-        // Search field
-        JTextField searchField = new JTextField();
-        searchField.setPreferredSize(new Dimension(300, 35));
-        searchField.setToolTipText("Search for books, authors...");
-        searchField.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(209, 213, 219), 1, true),
-                BorderFactory.createEmptyBorder(5, 10, 5, 10)));
+        initializeTimer();
 
         // User info and time
         JPanel userPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
@@ -228,7 +68,6 @@ public class UserDashboard extends JFrame {
         userPanel.add(notificationIcon);
         userPanel.add(avatarLabel);
 
-        topPanel.add(searchField, BorderLayout.WEST);
         topPanel.add(userPanel, BorderLayout.EAST);
 
         // Center panel with stats and books
@@ -342,7 +181,7 @@ public class UserDashboard extends JFrame {
                 "Harper Lee",
                 "https://viewthroughmywindow.com/wp-content/uploads/2019/05/Mocking-Bird.jpg",
                 "Due: May 15, 2025"
-                ));
+        ));
         booksGrid.add(createBookCard(
                 "1984",
                 "George Orwell",
@@ -374,9 +213,9 @@ public class UserDashboard extends JFrame {
         JScrollPane scrollPane = new JScrollPane(centerPanel);
         scrollPane.setBorder(null);
         scrollPane.getVerticalScrollBar().setUnitIncrement(16);
-        mainPanel.add(scrollPane, BorderLayout.CENTER);
+        add(scrollPane, BorderLayout.CENTER);
 
-        return mainPanel;
+        setVisible(true);
     }
 
     private JPanel createStatCard(String title, String value, String icon, Color color) {
@@ -413,7 +252,6 @@ public class UserDashboard extends JFrame {
         RoundedPanel card = new RoundedPanel(12, new Color(220, 220, 220), 1, new Color(248, 248, 248));
         card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
 
-
         JLabel bookIcon;
         if(bookImage != ""){
             bookIcon = new JLabel("Loading");
@@ -430,7 +268,7 @@ public class UserDashboard extends JFrame {
                         SwingUtilities.invokeLater(() -> {
                             bookIcon.setText(""); // Remove "Loading..." text
                             bookIcon.setIcon(icon);
-                            pack(); // Adjust frame size after loading
+//                            pack(); // Adjust frame size after loading
                         });
                     } else {
                         SwingUtilities.invokeLater(() -> {
@@ -479,30 +317,11 @@ public class UserDashboard extends JFrame {
     }
 
     private void initializeTimer() {
-        Timer timer = new Timer(1000, new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                SimpleDateFormat sdf = new SimpleDateFormat("hh:mm a | MMM dd, yyyy");
-                String formattedTime = sdf.format(new Date());
-                timeLabel.setText(formattedTime);
-            }
+        Timer timer = new Timer(1000, e -> {
+            SimpleDateFormat sdf = new SimpleDateFormat("hh:mm a | MMM dd, yyyy");
+            String formattedTime = sdf.format(new Date());
+            timeLabel.setText(formattedTime);
         });
         timer.start();
-    }
-
-    public static void main(String[] args) {
-        try {
-            // Set look and feel to system
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                new UserDashboard();
-            }
-        });
     }
 }

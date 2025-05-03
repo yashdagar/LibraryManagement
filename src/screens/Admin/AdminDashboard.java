@@ -1,26 +1,29 @@
-package ui;
-import javax.swing.*;
-import javax.swing.border.*;
-import javax.swing.table.*;
-import java.awt.*;
-import java.awt.event.*;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+package screens.Admin;
 
 import components.ModernJTable;
 import components.RoundedPanel;
 import components.RoundedPanelButton;
+import models.Admin;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.block.EmptyBlock;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PiePlot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.renderer.category.BarRenderer;
-import org.jfree.chart.ui.HorizontalAlignment;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.general.DefaultPieDataset;
+
+import javax.swing.*;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class AdminDashboard extends JFrame {
     // Color scheme
@@ -38,7 +41,7 @@ public class AdminDashboard extends JFrame {
     private JLabel timeLabel;
     private Timer timer;
 
-    public AdminDashboard() {
+    public AdminDashboard(AdminAppFrame adminAppFrame) {
         setTitle("LibraryX - Admin Dashboard");
         setSize(1200, 700);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -511,19 +514,7 @@ public class AdminDashboard extends JFrame {
         timer.start();
     }
 
-    public static void main(String[] args) {
-        try {
-            // Set look and feel to system
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public void setAdminInfo(Admin admin) {
 
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                new AdminDashboard();
-            }
-        });
     }
 }
