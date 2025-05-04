@@ -19,9 +19,11 @@ public class UserAppFrame extends JFrame {
 
         // Set up the frame
         setTitle("User Authentication System");
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
+        setUndecorated(false);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(800, 600);
         setLocationRelativeTo(null);
+        setResizable(false);
 
         // Create card layout and main panel
         cardLayout = new CardLayout();

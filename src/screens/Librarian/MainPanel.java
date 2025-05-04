@@ -1,5 +1,6 @@
 package screens.Librarian;
 
+import components.ModernJTable;
 import models.Librarian;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
@@ -324,19 +325,11 @@ public class MainPanel extends JPanel {
         };
 
         // Create table
-        JTable table = new JTable(model);
-        table.setFont(new Font("Arial", Font.PLAIN, 12));
-        table.setRowHeight(30);
-        table.setShowVerticalLines(false);
-        table.getTableHeader().setFont(new Font("Arial", Font.BOLD, 12));
-        table.getTableHeader().setBackground(new Color(243, 244, 246));
-        table.getTableHeader().setForeground(textColor);
-        table.getTableHeader().setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(229, 231, 235)));
+        ModernJTable table = new ModernJTable(model);
 
         // Status column renderer
         table.getColumnModel().getColumn(3).setCellRenderer(new DefaultTableCellRenderer() {
-            @Override
-            public Component getTableCellRendererComponent(JTable table, Object value,
+            public Component getTableCellRendererComponent(ModernJTable table, Object value,
                                                            boolean isSelected, boolean hasFocus, int row, int column) {
                 JLabel label = (JLabel) super.getTableCellRendererComponent(
                         table, value, isSelected, hasFocus, row, column);
