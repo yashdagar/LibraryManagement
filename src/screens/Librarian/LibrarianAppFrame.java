@@ -16,9 +16,9 @@ public class LibrarianAppFrame extends JFrame {
     private final LibrarianDashboard librarianDashboard;
     final LibrarianAuthService dbConnection;
 
-    public LibrarianAppFrame() {
+    public LibrarianAppFrame(RoleSelectorFrame frame) {
         // Initialize database connection
-        dbConnection = new LibrarianAuthService();
+        dbConnection = new LibrarianAuthService(frame.databaseManager);
 
         // Set up the frame - using similar styling as RoleSelectorFrame
         setTitle("Librarian Management System");
@@ -119,14 +119,14 @@ public class LibrarianAppFrame extends JFrame {
         RoleSelectorFrame.reopenRoleSelector();
     }
 
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            try {
-                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            new LibrarianAppFrame();
-        });
-    }
+//    public static void main(String[] args) {
+//        SwingUtilities.invokeLater(() -> {
+//            try {
+//                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//            new LibrarianAppFrame();
+//        });
+//    }
 }

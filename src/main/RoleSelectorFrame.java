@@ -5,6 +5,7 @@ import screens.Admin.AdminAppFrame;
 import screens.Librarian.LibrarianAppFrame;
 import components.RoundedPanel;
 import components.RoundedPanelButton;
+import services.DatabaseManager;
 
 import javax.swing.*;
 import java.awt.*;
@@ -23,9 +24,11 @@ public class RoleSelectorFrame extends JFrame {
     private final JLabel titleLabel;
     private final JLabel subtitleLabel;
     private final JLabel dateTimeLabel;
+    public DatabaseManager databaseManager;
 
     public RoleSelectorFrame() {
         // Set up the frame
+        databaseManager=new DatabaseManager();
         setTitle("Role Selection");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(800, 600);

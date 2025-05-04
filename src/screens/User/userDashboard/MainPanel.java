@@ -1,4 +1,4 @@
-package screens.user_dashboard;
+package screens.User.userDashboard;
 
 import components.RoundedPanel;
 import components.RoundedPanelButton;

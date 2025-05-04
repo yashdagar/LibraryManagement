@@ -8,25 +8,10 @@ import java.util.Optional;
 public class AdminAuthService {
     private Connection connection;
 
-    public AdminAuthService() {
-        connect();
+    public AdminAuthService(DatabaseManager databaseManager) {
+        createAdminsTableIfNotExists();
     }
 
-    private void connect() {
-        try {
-            String DB_URL = "jdbc:mysql://localhost:3306/my_db";
-            String DB_USER = "root";
-            String DB_PASSWORD = "Mysql@2908";
-            connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
-            System.out.println("Database connection established");
-
-            // Create admins table if it doesn't exist
-            createAdminsTableIfNotExists();
-        } catch (SQLException e) {
-            System.err.println("Failed to connect to database");
-            e.printStackTrace();
-        }
-    }
 
     private void createAdminsTableIfNotExists() {
         try {
@@ -53,7 +38,7 @@ public class AdminAuthService {
         try {
             // Check if connection is valid, reconnect if needed
             if (connection == null || connection.isClosed()) {
-                connect();
+                createAdminsTableIfNotExists();
             }
 
             // Query to validate admin credentials using email
@@ -91,7 +76,7 @@ public class AdminAuthService {
         try {
             // Check if connection is valid, reconnect if needed
             if (connection == null || connection.isClosed()) {
-                connect();
+                createAdminsTableIfNotExists();
             }
 
             // Check if email already exists
@@ -129,15 +114,4 @@ public class AdminAuthService {
         }
     }
 
-    public void closeConnection() {
-        try {
-            if (connection != null && !connection.isClosed()) {
-                connection.close();
-                System.out.println("Database connection closed");
-            }
-        } catch (SQLException e) {
-            System.err.println("Error closing database connection");
-            e.printStackTrace();
-        }
-    }
 }

@@ -11,27 +11,12 @@ import java.util.Optional;
 public class UserAuthService {
     private Connection connection;
 
-    public UserAuthService() {
-        connect();
+    public UserAuthService(DatabaseManager databaseManager) {
+        createUsersTableIfNotExists();
+        createBooksTableIfNotExists();
+        createIssueRequestsTableIfNotExists();;
     }
 
-    private void connect() {
-        try {
-            String DB_URL = "jdbc:mysql://localhost:3306/my_db";
-            String DB_USER = "root";
-            String DB_PASSWORD = "Mysql@2908";
-            connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
-            System.out.println("Database connection established");
-
-            // Create all necessary tables if they don't exist
-            createUsersTableIfNotExists();
-            createBooksTableIfNotExists();
-            createIssueRequestsTableIfNotExists();
-        } catch (SQLException e) {
-            System.err.println("Failed to connect to database");
-            e.printStackTrace();
-        }
-    }
 
     private void createUsersTableIfNotExists() {
         try {
@@ -105,7 +90,9 @@ public class UserAuthService {
         try {
             // Check if connection is valid, reconnect if needed
             if (connection == null || connection.isClosed()) {
-                connect();
+                createUsersTableIfNotExists();
+                createBooksTableIfNotExists();
+                createIssueRequestsTableIfNotExists();;
             }
 
             // Query to validate user credentials using email instead of username
@@ -127,7 +114,9 @@ public class UserAuthService {
         try {
             // Check if connection is valid, reconnect if needed
             if (connection == null || connection.isClosed()) {
-                connect();
+                createUsersTableIfNotExists();
+                createBooksTableIfNotExists();
+                createIssueRequestsTableIfNotExists();;
             }
 
             // Check if email already exists
@@ -172,7 +161,9 @@ public class UserAuthService {
         try {
             // Check if connection is valid, reconnect if needed
             if (connection == null || connection.isClosed()) {
-                connect();
+                createUsersTableIfNotExists();
+                createBooksTableIfNotExists();
+                createIssueRequestsTableIfNotExists();;
             }
 
             String query = "SELECT * FROM books";
@@ -206,7 +197,9 @@ public class UserAuthService {
         try {
             // Check if connection is valid, reconnect if needed
             if (connection == null || connection.isClosed()) {
-                connect();
+                createUsersTableIfNotExists();
+                createBooksTableIfNotExists();
+                createIssueRequestsTableIfNotExists();;
             }
 
             // First check if the book is available
@@ -280,15 +273,4 @@ public class UserAuthService {
         }
     }
 
-    public void closeConnection() {
-        try {
-            if (connection != null && !connection.isClosed()) {
-                connection.close();
-                System.out.println("Database connection closed");
-            }
-        } catch (SQLException e) {
-            System.err.println("Error closing database connection");
-            e.printStackTrace();
-        }
-    }
 }

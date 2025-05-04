@@ -416,10 +416,5 @@ public class AdminLoginPage extends JPanel {
         return mainContainer;
     }
 
-    // Clean up resources when no longer needed
-    public void cleanup() {
-        if (authService != null) {
-            authService.closeConnection();
-        }
-    }
+
 }

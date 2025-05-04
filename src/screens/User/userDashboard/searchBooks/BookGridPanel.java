@@ -1,4 +1,4 @@
-package screens.user_dashboard.search_books;
+package screens.User.userDashboard.searchBooks;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;

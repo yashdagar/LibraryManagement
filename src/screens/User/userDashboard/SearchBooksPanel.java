@@ -1,4 +1,4 @@
-package screens.user_dashboard;
+package screens.User.userDashboard;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -10,7 +10,7 @@ import java.util.List;
 
 import models.Book;
 import screens.User.UserAppFrame;
-import screens.user_dashboard.search_books.BookGridPanel;
+import screens.User.userDashboard.searchBooks.BookGridPanel;
 import services.UserAuthService;
 
 public class SearchBooksPanel extends JPanel {

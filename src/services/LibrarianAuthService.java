@@ -8,25 +8,11 @@ import java.util.Optional;
 public class LibrarianAuthService {
     private Connection connection;
 
-    public LibrarianAuthService() {
-        connect();
+    public LibrarianAuthService(DatabaseManager databaseManager) {
+        createLibrariansTableIfNotExists();
     }
 
-    private void connect() {
-        try {
-            String DB_URL = "jdbc:mysql://localhost:3306/my_db";
-            String DB_USER = "root";
-            String DB_PASSWORD = "Mysql@2908";
-            connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
-            System.out.println("Database connection established");
 
-            // Create librarians table if it doesn't exist
-            createLibrariansTableIfNotExists();
-        } catch (SQLException e) {
-            System.err.println("Failed to connect to database");
-            e.printStackTrace();
-        }
-    }
 
     private void createLibrariansTableIfNotExists() {
         try {
@@ -54,7 +40,7 @@ public class LibrarianAuthService {
         try {
             // Check if connection is valid, reconnect if needed
             if (connection == null || connection.isClosed()) {
-                connect();
+                createLibrariansTableIfNotExists();;
             }
 
             // Query to validate librarian credentials using email
@@ -91,7 +77,7 @@ public class LibrarianAuthService {
         try {
             // Check if connection is valid, reconnect if needed
             if (connection == null || connection.isClosed()) {
-                connect();
+                createLibrariansTableIfNotExists();
             }
 
             // Check if email already exists
@@ -129,15 +115,4 @@ public class LibrarianAuthService {
         }
     }
 
-    public void closeConnection() {
-        try {
-            if (connection != null && !connection.isClosed()) {
-                connection.close();
-                System.out.println("Database connection closed");
-            }
-        } catch (SQLException e) {
-            System.err.println("Error closing database connection");
-            e.printStackTrace();
-        }
-    }
 }

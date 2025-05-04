@@ -6,8 +6,8 @@ import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import models.User;
-import screens.user_dashboard.MainPanel;
-import screens.user_dashboard.SearchBooksPanel;
+import screens.User.userDashboard.MainPanel;
+import screens.User.userDashboard.SearchBooksPanel;
 
 public class UserDashboard extends JPanel {
     // Color scheme
