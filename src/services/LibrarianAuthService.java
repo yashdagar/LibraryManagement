@@ -1,11 +1,7 @@
 package services;
 
 import models.Librarian;
-import models.Book;
-import models.IssueRequest;
-
-import java.util.ArrayList;
-import java.util.List;
+import models.LibraryRequest;
 
 import java.sql.*;
 import java.util.Optional;
@@ -25,33 +21,10 @@ public class LibrarianAuthService {
             connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
             System.out.println("Database connection established");
 
-            // Create tables if they don't exist
+            // Create librarians table if it doesn't exist
             createLibrariansTableIfNotExists();
-            createBooksTableIfNotExists();
-            createIssueRequestsTableIfNotExists();
         } catch (SQLException e) {
             System.err.println("Failed to connect to database");
-            e.printStackTrace();
-        }
-    }
-
-    private void createIssueRequestsTableIfNotExists() {
-        try {
-            Statement statement = connection.createStatement();
-            String createTableSQL =
-                    "CREATE TABLE IF NOT EXISTS issue_requests (" +
-                            "id INT AUTO_INCREMENT PRIMARY KEY, " +
-                            "user_id VARCHAR(50) NOT NULL, " +
-                            "book_id VARCHAR(50) NOT NULL, " +
-                            "state VARCHAR(20) NOT NULL, " +  // PENDING, APPROVED, REJECTED, RETURNED
-                            "issue_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
-                            "due_date TIMESTAMP, " +
-                            "return_date TIMESTAMP)";
-            statement.execute(createTableSQL);
-            statement.close();
-            System.out.println("Issue Requests table verified");
-        } catch (SQLException e) {
-            System.err.println("Error creating issue requests table");
             e.printStackTrace();
         }
     }
@@ -78,29 +51,6 @@ public class LibrarianAuthService {
         }
     }
 
-    private void createBooksTableIfNotExists() {
-        try {
-            Statement statement = connection.createStatement();
-            String createTableSQL =
-                    "CREATE TABLE IF NOT EXISTS books (" +
-                            "id INT AUTO_INCREMENT PRIMARY KEY, " +
-                            "name VARCHAR(200) NOT NULL, " +
-                            "description TEXT, " +
-                            "image_url VARCHAR(255), " +
-                            "quantity INT NOT NULL DEFAULT 0, " +
-                            "author VARCHAR(200) NOT NULL, " +
-                            "category VARCHAR(100) NOT NULL, " +
-                            "publication_year VARCHAR(10), " +
-                            "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)";
-            statement.execute(createTableSQL);
-            statement.close();
-            System.out.println("Books table verified");
-        } catch (SQLException e) {
-            System.err.println("Error creating books table");
-            e.printStackTrace();
-        }
-    }
-
     public Optional<Librarian> loginLibrarian(String email, String password) {
         try {
             // Check if connection is valid, reconnect if needed
@@ -118,15 +68,11 @@ public class LibrarianAuthService {
 
             if (resultSet.next()) {
                 // Create Librarian object from result set
-                Librarian librarian = new Librarian(
-                        resultSet.getString("name"),
-                        resultSet.getString("email"),
-                        resultSet.getString("phone")
-                );
+                Optional<Librarian> librarian =  Librarian.getFromResultSet(resultSet);
 
                 resultSet.close();
                 statement.close();
-                return Optional.of(librarian);
+                return Optional.of(librarian.get());
             }
 
             resultSet.close();
@@ -179,153 +125,123 @@ public class LibrarianAuthService {
             return false;
         }
     }
-
-    public boolean addBook(Book book) {
+    public LibraryRequest getLibraryRequestByIds(String userId, String bookId) {
         try {
-            // Check if connection is valid, reconnect if needed
-            if (connection == null || connection.isClosed()) {
-                connect();
+            String sql = "SELECT r.*, u.name as member_name, b.title as book_title " +
+                    "FROM library_requests r " +
+                    "JOIN users u ON r.user_id = u.user_id " +
+                    "JOIN books b ON r.book_id = b.book_id " +
+                    "WHERE r.user_id = ? AND r.book_id = ? " +
+                    "AND (r.status = 'ISSUED' OR r.status = 'OVERDUE') " +
+                    "ORDER BY r.request_date DESC LIMIT 1";
+
+            PreparedStatement stmt = connection.prepareStatement(sql);
+            stmt.setString(1, userId);
+            stmt.setString(2, bookId);
+
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return LibraryRequest.getFromResultSet(rs).orElse(null);
+            }
+            return null;
+        } catch (SQLException e) {
+            System.out.println("Error getting library request: " + e.getMessage());
+            return null;
+        }
+    }
+    public boolean returnBook(int requestId, int librarianId) {
+        try {
+            // First get the request
+            String sql = "SELECT * FROM library_requests WHERE request_id = ?";
+            PreparedStatement stmt = connection.prepareStatement(sql);
+            stmt.setInt(1, requestId);
+
+            ResultSet rs = stmt.executeQuery();
+            LibraryRequest request = LibraryRequest.getFromResultSet(rs).orElse(null);
+
+            if (request == null) {
+                return false;
             }
 
-            // Insert new book
-            String insertQuery = "INSERT INTO books (name, description, image_url, quantity, author, category, publication_year) " +
-                    "VALUES (?, ?, ?, ?, ?, ?, ?)";
-            PreparedStatement insertStatement = connection.prepareStatement(insertQuery);
-            insertStatement.setString(1, book.getName());
-            insertStatement.setString(2, book.getDescription());
-            insertStatement.setString(3, book.getImageUrl());
-            insertStatement.setInt(4, book.getQuantity());
-            insertStatement.setString(5, book.getAuthor());
-            insertStatement.setString(6, book.getCategory());
-            insertStatement.setString(7, book.getPublicationYear());
+            // Process the return
+            boolean success = request.returnBook(librarianId);
+            if (!success) {
+                return false;
+            }
 
-            int rowsAffected = insertStatement.executeUpdate();
-            insertStatement.close();
-
-            return rowsAffected > 0;
+            // Update the request in the database
+            return updateLibraryRequest(request);
         } catch (SQLException e) {
-            System.err.println("Failed to add book");
-            e.printStackTrace();
+            System.out.println("Error returning book: " + e.getMessage());
             return false;
         }
     }
 
-    public List<IssueRequest> getAllIssueRequests() {
-        List<IssueRequest> issueRequests = new ArrayList<>();
+    /**
+     * Check if a book is currently overdue and update its status
+     * @param requestId The ID of the library request to check
+     * @return True if the book is overdue, false otherwise
+     */
+    public boolean checkAndUpdateOverdueStatus(int requestId) {
         try {
-            // Check if connection is valid, reconnect if needed
-            if (connection == null || connection.isClosed()) {
-                connect();
+            // First get the request
+            String sql = "SELECT * FROM library_requests WHERE request_id = ?";
+            PreparedStatement stmt = connection.prepareStatement(sql);
+            stmt.setInt(1, requestId);
+
+            ResultSet rs = stmt.executeQuery();
+            LibraryRequest request = LibraryRequest.getFromResultSet(rs).orElse(null);
+
+            if (request == null) {
+                return false;
             }
 
-            String query = "SELECT * FROM issue_requests ORDER BY issue_date DESC";
-            Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery(query);
-
-            while (resultSet.next()) {
-                String bookId = resultSet.getString("book_id");
-                String userId = resultSet.getString("user_id");
-                String stateStr = resultSet.getString("state");
-
-                // Convert string state to enum
-                IssueRequest.State state;
-                try {
-                    state = IssueRequest.State.valueOf(stateStr);
-                } catch (IllegalArgumentException e) {
-                    // Default to PENDING if state is invalid
-                    state = IssueRequest.State.PENDING;
-                }
-
-                IssueRequest request = new IssueRequest(bookId, userId, state);
-                issueRequests.add(request);
+            // Check if the book is overdue
+            if (request.getStatus() == LibraryRequest.State.ISSUED &&
+                    request.getDaysOverdue() > 0) {
+                // Update status to OVERDUE
+                request.setStatus(LibraryRequest.State.OVERDUE);
+                updateLibraryRequest(request);
+                return true;
             }
 
-            resultSet.close();
-            statement.close();
+            return false;
         } catch (SQLException e) {
-            System.err.println("Error fetching issue requests");
-            e.printStackTrace();
-        }
-        return issueRequests;
-    }
-
-    public boolean updateIssueRequestState(int requestId, IssueRequest.State newState) {
-        try {
-            // Check if connection is valid, reconnect if needed
-            if (connection == null || connection.isClosed()) {
-                connect();
-            }
-
-            // Update issue request state
-            String updateQuery = "UPDATE issue_requests SET state = ? WHERE id = ?";
-            PreparedStatement updateStatement = connection.prepareStatement(updateQuery);
-            updateStatement.setString(1, newState.toString());
-            updateStatement.setInt(2, requestId);
-
-            int rowsAffected = updateStatement.executeUpdate();
-            updateStatement.close();
-
-            // If new state is APPROVED, update book quantity
-            if (newState == IssueRequest.State.APPROVED) {
-                // First get the book ID for this request
-                String getBookIdQuery = "SELECT book_id FROM issue_requests WHERE id = ?";
-                PreparedStatement getBookIdStatement = connection.prepareStatement(getBookIdQuery);
-                getBookIdStatement.setInt(1, requestId);
-                ResultSet resultSet = getBookIdStatement.executeQuery();
-
-                if (resultSet.next()) {
-                    String bookId = resultSet.getString("book_id");
-
-                    // Decrease the book quantity by 1
-                    String updateBookQuery = "UPDATE books SET quantity = quantity - 1 WHERE id = ?";
-                    PreparedStatement updateBookStatement = connection.prepareStatement(updateBookQuery);
-                    updateBookStatement.setString(1, bookId);
-                    updateBookStatement.executeUpdate();
-                    updateBookStatement.close();
-                }
-
-                resultSet.close();
-                getBookIdStatement.close();
-            }
-
-            // If new state is RETURNED, update book quantity
-            if (newState == IssueRequest.State.RETURNED) {
-                // First get the book ID for this request
-                String getBookIdQuery = "SELECT book_id FROM issue_requests WHERE id = ?";
-                PreparedStatement getBookIdStatement = connection.prepareStatement(getBookIdQuery);
-                getBookIdStatement.setInt(1, requestId);
-                ResultSet resultSet = getBookIdStatement.executeQuery();
-
-                if (resultSet.next()) {
-                    String bookId = resultSet.getString("book_id");
-
-                    // Increase the book quantity by 1
-                    String updateBookQuery = "UPDATE books SET quantity = quantity + 1 WHERE id = ?";
-                    PreparedStatement updateBookStatement = connection.prepareStatement(updateBookQuery);
-                    updateBookStatement.setString(1, bookId);
-                    updateBookStatement.executeUpdate();
-                    updateBookStatement.close();
-
-                    // Also update the return_date to current timestamp
-                    String updateReturnDateQuery = "UPDATE issue_requests SET return_date = CURRENT_TIMESTAMP WHERE id = ?";
-                    PreparedStatement updateReturnDateStatement = connection.prepareStatement(updateReturnDateQuery);
-                    updateReturnDateStatement.setInt(1, requestId);
-                    updateReturnDateStatement.executeUpdate();
-                    updateReturnDateStatement.close();
-                }
-
-                resultSet.close();
-                getBookIdStatement.close();
-            }
-
-            return rowsAffected > 0;
-        } catch (SQLException e) {
-            System.err.println("Failed to update issue request state");
-            e.printStackTrace();
+            System.out.println("Error checking overdue status: " + e.getMessage());
             return false;
         }
     }
+    public boolean updateLibraryRequest(LibraryRequest request) {
+        try {
+            String sql = "UPDATE library_requests SET " +
+                    "status = ?, librarian_id = ?, processed_date = ?, notes = ? " +
+                    "WHERE request_id = ?";
 
+            PreparedStatement stmt = connection.prepareStatement(sql);
+            stmt.setString(1, request.getStatus().toString());
+
+            if (request.getLibrarianId() != null) {
+                stmt.setInt(2, request.getLibrarianId());
+            } else {
+                stmt.setNull(2, java.sql.Types.INTEGER);
+            }
+
+            if (request.getProcessedDate() != null) {
+                stmt.setTimestamp(3, new java.sql.Timestamp(request.getProcessedDate().getTime()));
+            } else {
+                stmt.setNull(3, java.sql.Types.TIMESTAMP);
+            }
+
+            stmt.setString(4, request.getNotes());
+            stmt.setInt(5, request.getRequestId());
+
+            int updated = stmt.executeUpdate();
+            return updated > 0;
+        } catch (SQLException e) {
+            System.out.println("Error updating library request: " + e.getMessage());
+            return false;
+        }
+    }
     public void closeConnection() {
         try {
             if (connection != null && !connection.isClosed()) {

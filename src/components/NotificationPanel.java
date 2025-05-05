@@ -1,6 +1,8 @@
 package components;
 
+import models.Librarian;
 import models.Notification;
+import models.Student;
 import models.User;
 import services.NotificationService;
 
@@ -13,11 +15,10 @@ import java.awt.image.BufferedImage;
 import java.text.SimpleDateFormat;
 import java.util.List;
 
-/**
- * Reusable notification panel that can be used in both Student and Librarian dashboards
- */
 public class NotificationPanel extends RoundedPanel {
-    private final User user;
+    private Student student;
+    private User user;
+    private Librarian librarian;
     private final JPanel notificationsContainer;
     private final JLabel titleLabel;
     private final JLabel emptyNotificationLabel;
@@ -68,6 +69,91 @@ public class NotificationPanel extends RoundedPanel {
 
         refreshNotifications();
     }
+    public NotificationPanel(Librarian librarian) {
+        super(15, Color.WHITE, 1, Color.LIGHT_GRAY);
+        this.librarian = librarian;
+        this.notificationService = NotificationService.getInstance();
+        this.dateFormat = new SimpleDateFormat("MMM dd, HH:mm");
+
+        setLayout(new BorderLayout(10, 10));
+        setBorder(new EmptyBorder(10, 10, 10, 10));
+
+        // Header panel
+        JPanel headerPanel = new JPanel(new BorderLayout());
+        headerPanel.setOpaque(false);
+        titleLabel = new JLabel("Notifications");
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 16));
+
+        JButton refreshButton = new JButton("Refresh");
+        refreshButton.setFocusPainted(false);
+        refreshButton.addActionListener(e -> refreshNotifications());
+
+        headerPanel.add(titleLabel, BorderLayout.WEST);
+        headerPanel.add(refreshButton, BorderLayout.EAST);
+
+        // Container for notifications with scroll
+        notificationsContainer = new JPanel();
+        notificationsContainer.setLayout(new BoxLayout(notificationsContainer, BoxLayout.Y_AXIS));
+        notificationsContainer.setOpaque(false);
+
+        JScrollPane scrollPane = new JScrollPane(notificationsContainer);
+        scrollPane.setBorder(null);
+        scrollPane.setOpaque(false);
+        scrollPane.getViewport().setOpaque(false);
+
+        // Empty state label
+        emptyNotificationLabel = new JLabel("You have no notifications", SwingConstants.CENTER);
+        emptyNotificationLabel.setFont(new Font("Segoe UI", Font.ITALIC, 14));
+        emptyNotificationLabel.setForeground(Color.GRAY);
+
+        add(headerPanel, BorderLayout.NORTH);
+        add(scrollPane, BorderLayout.CENTER);
+
+        refreshNotifications();
+    }
+    public NotificationPanel(Student student) {
+        super(15, Color.WHITE, 1, Color.LIGHT_GRAY);
+        this.student = student;
+        this.notificationService = NotificationService.getInstance();
+        this.dateFormat = new SimpleDateFormat("MMM dd, HH:mm");
+
+        setLayout(new BorderLayout(10, 10));
+        setBorder(new EmptyBorder(10, 10, 10, 10));
+
+        // Header panel
+        JPanel headerPanel = new JPanel(new BorderLayout());
+        headerPanel.setOpaque(false);
+        titleLabel = new JLabel("Notifications");
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 16));
+
+        JButton refreshButton = new JButton("Refresh");
+        refreshButton.setFocusPainted(false);
+        refreshButton.addActionListener(e -> refreshNotifications());
+
+        headerPanel.add(titleLabel, BorderLayout.WEST);
+        headerPanel.add(refreshButton, BorderLayout.EAST);
+
+        // Container for notifications with scroll
+        notificationsContainer = new JPanel();
+        notificationsContainer.setLayout(new BoxLayout(notificationsContainer, BoxLayout.Y_AXIS));
+        notificationsContainer.setOpaque(false);
+
+        JScrollPane scrollPane = new JScrollPane(notificationsContainer);
+        scrollPane.setBorder(null);
+        scrollPane.setOpaque(false);
+        scrollPane.getViewport().setOpaque(false);
+
+        // Empty state label
+        emptyNotificationLabel = new JLabel("You have no notifications", SwingConstants.CENTER);
+        emptyNotificationLabel.setFont(new Font("Segoe UI", Font.ITALIC, 14));
+        emptyNotificationLabel.setForeground(Color.GRAY);
+
+        add(headerPanel, BorderLayout.NORTH);
+        add(scrollPane, BorderLayout.CENTER);
+
+        refreshNotifications();
+    }
+
 
     public void refreshNotifications() {
         notificationsContainer.removeAll();

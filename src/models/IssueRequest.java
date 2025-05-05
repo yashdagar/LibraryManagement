@@ -11,11 +11,11 @@ public class IssueRequest {
     public String memberName;
     public String memberEmail;
     public Date requestDate;
-    public String status; // PENDING, APPROVED, REJECTED
+    public State status; // PENDING, APPROVED, REJECTED
     public String notes;
 
     public IssueRequest(int id, int bookId, String bookTitle, String bookAuthor, int memberId,
-                        String memberName, String memberEmail, Date requestDate, String status, String notes) {
+                        String memberName, String memberEmail, Date requestDate, State status, String notes) {
         this.id = id;
         this.bookId = bookId;
         this.bookTitle = bookTitle;

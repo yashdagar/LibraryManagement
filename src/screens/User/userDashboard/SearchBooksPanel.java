@@ -217,7 +217,7 @@ public class SearchBooksPanel extends JPanel {
         viewSwitchPanel.setBackground(backgroundColor);
 
         // Grid view panel
-        bookGridPanel = new BookGridPanel();
+        bookGridPanel = new BookGridPanel(initializeDemoBooks());
 
         // List view panel
         listViewPanel = new JPanel();
@@ -479,5 +479,21 @@ public class SearchBooksPanel extends JPanel {
         });
 
         return cardPanel;
+    }
+    private ArrayList<Book> initializeDemoBooks() {
+        ArrayList<Book> books = new ArrayList<>();
+
+        books.add(new Book("The Great Gatsby", "A novel of the Jazz Age", "gatsby.jpg", 3, "F. Scott Fitzgerald", "Classic"));
+        books.add(new Book("To Kill a Mockingbird", "A novel about racial injustice", "mockingbird.jpg", 0, "Harper Lee", "Fiction"));
+        books.add(new Book("1984", "A dystopian social science fiction novel", "1984.jpg", 2, "George Orwell", "Dystopian"));
+        books.add(new Book("Pride and Prejudice", "A romantic novel of manners", "pride.jpg", 5, "Jane Austen", "Romance"));
+        books.add(new Book("The Hobbit", "A fantasy novel and children's book", "hobbit.jpg", 0, "J.R.R. Tolkien", "Fantasy"));
+        books.add(new Book("Harry Potter and the Philosopher's Stone", "The first novel in the Harry Potter series", "potter.jpg", 4, "J.K. Rowling", "Fantasy"));
+        books.add(new Book("The Catcher in the Rye", "A novel about teenage angst and alienation", "catcher.jpg", 1, "J.D. Salinger", "Fiction"));
+        books.add(new Book("The Lord of the Rings", "An epic high-fantasy novel", "lotr.jpg", 0, "J.R.R. Tolkien", "Fantasy"));
+        books.add(new Book("Brave New World", "A dystopian social science fiction novel", "brave.jpg", 3, "Aldous Huxley", "Dystopian"));
+        books.add(new Book("The Alchemist", "A novel about following your dreams", "alchemist.jpg", 2, "Paulo Coelho", "Fiction"));
+        return books;
+        //TODO get books from data base
     }
 }

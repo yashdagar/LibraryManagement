@@ -1,6 +1,5 @@
 package screens.Librarian.librarianDashboard;
 
-import models.IssuedBook;
 import services.LibrarianAuthService;
 
 import javax.swing.*;

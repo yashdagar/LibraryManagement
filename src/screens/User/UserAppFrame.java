@@ -16,17 +16,15 @@ public class UserAppFrame extends JFrame {
     public RoleSelectorFrame frame;
 
     public UserAppFrame(RoleSelectorFrame roleSelectorFrame) {
-        frame = roleSelectorFrame;
+        this.frame=roleSelectorFrame;
         // Initialize database connection
-        dbConnection = new UserAuthService(roleSelectorFrame.databaseManager);
+        dbConnection = new UserAuthService(appFrame.frame.databaseManager);
 
         // Set up the frame
         setTitle("User Authentication System");
-        setExtendedState(JFrame.MAXIMIZED_BOTH);
-        setUndecorated(false);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setSize(800, 600);
         setLocationRelativeTo(null);
-        setResizable(false);
 
         // Create card layout and main panel
         cardLayout = new CardLayout();
@@ -61,4 +59,5 @@ public class UserAppFrame extends JFrame {
         revalidate();
         repaint();
     }
+
 }
