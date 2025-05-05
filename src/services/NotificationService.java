@@ -146,7 +146,7 @@
 //    // Clear read notifications older than 30 days
 //    public void clearOldNotifications() {
 //        Date thirtyDaysAgo = new Date(System.currentTimeMillis() - 30L * 24 * 60 * 60 * 1000);
-//
-//        notifications.removeIf(n -> n.isRead() && n.getCreatedAt().before(thirtyDaysAgo));
-//    }
-//}
+
+        notifications.removeIf(n -> n.isRead() && n.getCreatedAt().before(thirtyDaysAgo));
+    }
+}
