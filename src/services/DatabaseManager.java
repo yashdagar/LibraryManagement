@@ -8,26 +8,14 @@ import java.sql.PreparedStatement;
 import models.Book;
 
 public class DatabaseManager {
-    // Static variable for the singleton instance
-    private static DatabaseManager instance;
 
-    // Connection object made private
-    private Connection connection;
-
-    // Private constructor to prevent instantiation outside of this class
-    private DatabaseManager() {
+    public DatabaseManager() {
         createDBIfNotExists();
         connect();
         createBooksTableIfNotExists();
     }
 
-    // Static method to get the singleton instance
-    public static synchronized DatabaseManager getInstance() {
-        if (instance == null) {
-            instance = new DatabaseManager();
-        }
-        return instance;
-    }
+    public Connection connection;
 
     private void connect() {
         try {
@@ -113,7 +101,7 @@ public class DatabaseManager {
     }
 
     private void addSampleBooks() throws SQLException {
-        String insertSQL = "INSERT INTO books (name, description, image_url, quantity, author, category, publication_year, available) " +
+        String insertSQL = "INSERT INTO books (name, description, image_url, quantity, author, category) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
         PreparedStatement preparedStatement = connection.prepareStatement(insertSQL);
@@ -125,8 +113,6 @@ public class DatabaseManager {
         preparedStatement.setInt(4, 10);
         preparedStatement.setString(5, "Harper Lee");
         preparedStatement.setString(6, "Fiction");
-        preparedStatement.setString(7, "1960");
-        preparedStatement.setBoolean(8, true);
         preparedStatement.executeUpdate();
 
         // Sample book 2
@@ -136,8 +122,6 @@ public class DatabaseManager {
         preparedStatement.setInt(4, 7);
         preparedStatement.setString(5, "George Orwell");
         preparedStatement.setString(6, "Science Fiction");
-        preparedStatement.setString(7, "1949");
-        preparedStatement.setBoolean(8, true);
         preparedStatement.executeUpdate();
 
         // Sample book 3
@@ -147,8 +131,6 @@ public class DatabaseManager {
         preparedStatement.setInt(4, 5);
         preparedStatement.setString(5, "F. Scott Fitzgerald");
         preparedStatement.setString(6, "Classic");
-        preparedStatement.setString(7, "1925");
-        preparedStatement.setBoolean(8, true);
         preparedStatement.executeUpdate();
 
         // Sample book 4
@@ -158,8 +140,6 @@ public class DatabaseManager {
         preparedStatement.setInt(4, 8);
         preparedStatement.setString(5, "Jane Austen");
         preparedStatement.setString(6, "Romance");
-        preparedStatement.setString(7, "1813");
-        preparedStatement.setBoolean(8, true);
         preparedStatement.executeUpdate();
 
         // Sample book 5
@@ -169,112 +149,9 @@ public class DatabaseManager {
         preparedStatement.setInt(4, 6);
         preparedStatement.setString(5, "J.D. Salinger");
         preparedStatement.setString(6, "Coming-of-age");
-        preparedStatement.setString(7, "1951");
-        preparedStatement.setBoolean(8, true);
         preparedStatement.executeUpdate();
 
         preparedStatement.close();
-    }
-
-    // Getter for the connection
-    public Connection getConnection() {
-        return connection;
-    }
-
-    /**
-     * Retrieves a student by their ID from the database
-     * @param studentId The ID of the student to retrieve
-     * @return The student if found, null otherwise
-     */
-    public models.Student getStudentById(int studentId) {
-        try {
-            String query = "SELECT * FROM students WHERE student_id = ?";
-            PreparedStatement preparedStatement = connection.prepareStatement(query);
-            preparedStatement.setInt(1, studentId);
-
-            java.sql.ResultSet resultSet = preparedStatement.executeQuery();
-            java.util.Optional<models.Student> studentOpt = models.Student.getFromResultSet(resultSet);
-
-            resultSet.close();
-            preparedStatement.close();
-
-            return studentOpt.orElse(null);
-
-        } catch (SQLException e) {
-            System.err.println("Error retrieving student with ID: " + studentId);
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    /**
-     * Returns a list of all issued books with their details
-     * @return List of IssuedBook objects that are currently issued
-     */
-    public java.util.List<models.IssuedBook> getAllIssuedBooks() {
-        java.util.List<models.IssuedBook> issuedBooks = new java.util.ArrayList<>();
-
-        try {
-            // SQL join query to get issued books with their book details
-            String query =
-                    "SELECT ib.id as issue_id, ib.student_id, ib.issue_date, ib.due_date, ib.return_date, ib.fine, " +
-                            "b.id as book_id, b.name, b.description, b.image_url, b.quantity, b.author, b.category, b.publication_year, b.available " +
-                            "FROM issued_books ib " +
-                            "JOIN books b ON ib.book_id = b.id " +
-                            "WHERE ib.return_date IS NULL";  // Only get currently issued books (not returned)
-
-            PreparedStatement preparedStatement = connection.prepareStatement(query);
-            java.sql.ResultSet resultSet = preparedStatement.executeQuery();
-
-            while (resultSet.next()) {
-                // Create Book object
-                int bookId = resultSet.getInt("book_id");
-                String name = resultSet.getString("name");
-                String description = resultSet.getString("description");
-                String imageUrl = resultSet.getString("image_url");
-                int quantity = resultSet.getInt("quantity");
-                String author = resultSet.getString("author");
-                String category = resultSet.getString("category");
-                String publicationYear = resultSet.getString("publication_year");
-
-                models.Book book = new models.Book(
-                        bookId, name, description, imageUrl,
-                        quantity, author, category, publicationYear
-                );
-
-                // Set availability explicitly since we know these books are issued
-                book.setAvailable(resultSet.getBoolean("available"));
-
-                // Create IssuedBook object
-                int issueId = resultSet.getInt("issue_id");
-                int studentId = resultSet.getInt("student_id");
-                java.util.Date issueDate = resultSet.getTimestamp("issue_date");
-                java.util.Date dueDate = resultSet.getTimestamp("due_date");
-
-                models.IssuedBook issuedBook = new models.IssuedBook(
-                        issueId, book, studentId, issueDate, dueDate
-                );
-
-                // Set return date and fine if available
-                java.sql.Timestamp returnTimestamp = resultSet.getTimestamp("return_date");
-                if (returnTimestamp != null) {
-                    issuedBook.setReturnDate(new java.util.Date(returnTimestamp.getTime()));
-                }
-
-                issuedBook.setFine(resultSet.getDouble("fine"));
-
-                issuedBooks.add(issuedBook);
-            }
-
-            resultSet.close();
-            preparedStatement.close();
-
-        } catch (SQLException e) {
-            System.err.println("Error retrieving issued books");
-            e.printStackTrace();
-        }
-
-        return issuedBooks;
     }
 
     public void closeConnection() {
