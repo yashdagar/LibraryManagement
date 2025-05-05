@@ -20,11 +20,11 @@ public class User {
         this.borrowedBooks = borrowedBooks;
     }
 
-    static public ArrayList<User> getUsersFromResultSet (ResultSet resultSet){
+    static public ArrayList<User> getUsersFromResultSet(ResultSet resultSet) {
         ArrayList<User> users = new ArrayList<>();
 
         try {
-            while (resultSet.next()){
+            while (resultSet.next()) {
                 User user = new User(
                         resultSet.getString("name"),
                         resultSet.getString("email"),
@@ -37,18 +37,18 @@ public class User {
                 );
                 users.add(user);
             }
-        }catch(SQLException e){
+        } catch (SQLException e) {
             System.out.println("Error occurred parsing user");
         }
 
         return users;
     }
 
-    public static Optional<User> getFromResultSet(ResultSet resultSet){
+    public static Optional<User> getFromResultSet(ResultSet resultSet) {
         User user = null;
 
         try {
-            if (resultSet.next()){
+            if (resultSet.next()) {
                 user = new User(
                         resultSet.getString("name"),
                         resultSet.getString("email"),
@@ -60,11 +60,14 @@ public class User {
                         resultSet.getInt("id")
                 );
             }
-        }catch(SQLException e){
+        } catch (SQLException e) {
             System.out.println("Error occurred parsing user");
             e.printStackTrace();
         }
 
         return Optional.ofNullable(user);
+    }
+    public int getId() {
+        return id;
     }
 }

@@ -1,79 +1,93 @@
 package models;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Optional;
-
 public class Book {
-    public final int bookId, categoryId, totalCopies, availableCopies, addedBy;
-    public final String isbn, title, author, publisher, shelfLocation;
-    public final int publicationYear;
-    public final String addedOn;
+    private int id;
+    private String name;
+    private String description;
+    private String imageUrl;
+    private int quantity;
+    private String author;
+    private String category;
+    private String publicationYear;
+    private boolean available;
 
-    public Book(int bookId, String isbn, String title, String author, String publisher, int publicationYear,
-                int categoryId, int totalCopies, int availableCopies, String shelfLocation,
-                int addedBy, String addedOn) {
-        this.bookId = bookId;
-        this.isbn = isbn;
-        this.title = title;
+    public Book(String name, String description, String imageUrl, int quantity, String author, String category) {
+        this.name = name;
+        this.description = description;
+        this.imageUrl = imageUrl;
+        this.quantity = quantity;
         this.author = author;
-        this.publisher = publisher;
+        this.category = category;
+        this.available = quantity > 0;
+    }
+
+    // Additional constructor that includes id and publication year
+    public Book(int id, String name, String description, String imageUrl, int quantity,
+                String author, String category, String publicationYear) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.imageUrl = imageUrl;
+        this.quantity = quantity;
+        this.author = author;
+        this.category = category;
         this.publicationYear = publicationYear;
-        this.categoryId = categoryId;
-        this.totalCopies = totalCopies;
-        this.availableCopies = availableCopies;
-        this.shelfLocation = shelfLocation;
-        this.addedBy = addedBy;
-        this.addedOn = addedOn;
+        this.available = quantity > 0;
     }
 
-    public static ArrayList<Book> getBooksFromResultSet(ResultSet rs) {
-        ArrayList<Book> books = new ArrayList<>();
-        try {
-            while (rs.next()) {
-                books.add(new Book(
-                        rs.getInt("book_id"),
-                        rs.getString("isbn"),
-                        rs.getString("title"),
-                        rs.getString("author"),
-                        rs.getString("publisher"),
-                        rs.getInt("publication_year"),
-                        rs.getInt("category_id"),
-                        rs.getInt("total_copies"),
-                        rs.getInt("available_copies"),
-                        rs.getString("shelf_location"),
-                        rs.getInt("added_by"),
-                        rs.getString("added_on")
-                ));
-            }
-        } catch (SQLException e) {
-            System.out.println("Error parsing books");
-        }
-        return books;
+    public int getId() {
+        return id;
     }
 
-    public static Optional<Book> getFromResultSet(ResultSet rs) {
-        try {
-            if (rs.next()) {
-                return Optional.of(new Book(
-                        rs.getInt("book_id"),
-                        rs.getString("isbn"),
-                        rs.getString("title"),
-                        rs.getString("author"),
-                        rs.getString("publisher"),
-                        rs.getInt("publication_year"),
-                        rs.getInt("category_id"),
-                        rs.getInt("total_copies"),
-                        rs.getInt("available_copies"),
-                        rs.getString("shelf_location"),
-                        rs.getInt("added_by"),
-                        rs.getString("added_on")
-                ));
-            }
-        } catch (SQLException e) {
-            System.out.println("Error parsing book");
+    public String getName() {
+        return name;
+    }
+
+    public String getTitle() {
+        return name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public int getQuantity() {
+        return quantity;
+    }
+
+    public String getAuthor() {
+        return author;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public String getPublicationYear() {
+        return publicationYear;
+    }
+
+    public boolean isAvailable() {
+        return available;
+    }
+
+    public void setAvailable(boolean available) {
+        this.available = available;
+    }
+
+    public void decrementQuantity() {
+        if (quantity > 0) {
+            quantity--;
+            available = quantity > 0;
         }
-        return Optional.empty();
+    }
+
+    public void incrementQuantity() {
+        quantity++;
+        available = true;
     }
 }

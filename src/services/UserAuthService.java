@@ -12,6 +12,7 @@ public class UserAuthService {
     private Connection connection;
 
     public UserAuthService(DatabaseManager databaseManager) {
+        connection=databaseManager.connection;
         createUsersTableIfNotExists();
         createBooksTableIfNotExists();
         createIssueRequestsTableIfNotExists();;

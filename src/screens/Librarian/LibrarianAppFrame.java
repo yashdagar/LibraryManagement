@@ -2,6 +2,7 @@ package screens.Librarian;
 
 import main.RoleSelectorFrame;
 import models.Librarian;
+import services.DatabaseManager;
 import services.LibrarianAuthService;
 import components.RoundedPanel;
 
@@ -15,8 +16,10 @@ public class LibrarianAppFrame extends JFrame {
     private final JPanel mainPanel;
     private final LibrarianDashboard librarianDashboard;
     final LibrarianAuthService dbConnection;
+    public RoleSelectorFrame frame;
 
     public LibrarianAppFrame(RoleSelectorFrame frame) {
+        this.frame = frame;
         // Initialize database connection
         dbConnection = new LibrarianAuthService(frame.databaseManager);
 
@@ -113,20 +116,7 @@ public class LibrarianAppFrame extends JFrame {
     }
 
     private void handleLogout() {
-        // Close this frame
         dispose();
-        // Reopen the role selector
         RoleSelectorFrame.reopenRoleSelector();
     }
-
-//    public static void main(String[] args) {
-//        SwingUtilities.invokeLater(() -> {
-//            try {
-//                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
-//            new LibrarianAppFrame();
-//        });
-//    }
 }

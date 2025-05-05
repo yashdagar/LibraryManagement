@@ -62,4 +62,8 @@ public class Student {
         }
         return Optional.empty();
     }
+
+    public int getId() {
+        return  studentId;
+    }
 }

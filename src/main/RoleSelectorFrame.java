@@ -5,6 +5,7 @@ import screens.Admin.AdminAppFrame;
 import screens.Librarian.LibrarianAppFrame;
 import components.RoundedPanel;
 import components.RoundedPanelButton;
+import components.SnackBar;
 import services.DatabaseManager;
 
 import javax.swing.*;
@@ -14,16 +15,13 @@ import java.awt.event.ActionListener;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-/**
- * Entry point application that allows users to select their role
- * and launches the appropriate application frame.
- */
 public class RoleSelectorFrame extends JFrame {
 
     private final RoundedPanel mainPanel;
     private final JLabel titleLabel;
     private final JLabel subtitleLabel;
     private final JLabel dateTimeLabel;
+    private final JPanel contentPanel;
     public DatabaseManager databaseManager;
 
     public RoleSelectorFrame() {
@@ -35,7 +33,7 @@ public class RoleSelectorFrame extends JFrame {
         setLocationRelativeTo(null);
 
         // Create main content panel
-        JPanel contentPanel = new JPanel();
+        contentPanel = new JPanel();
         contentPanel.setLayout(new BorderLayout());
         contentPanel.setBackground(new Color(245, 245, 250));
 
@@ -86,17 +84,17 @@ public class RoleSelectorFrame extends JFrame {
         cardsPanel.add(createRoleCard("User",
                 "Access your personal account and manage your profile settings",
                 new Color(100, 150, 220),
-                e -> launchUserApp()));
+                e -> showRoleSnackBarAndLaunch("Launching User application...", () -> launchUserApp())));
 
         cardsPanel.add(createRoleCard("Administrator",
                 "Manage system settings, users, and administrative functions",
                 new Color(110, 80, 200),
-                e -> launchAdminApp()));
+                e -> showRoleSnackBarAndLaunch("Launching Administrator application...", () -> launchAdminApp())));
 
         cardsPanel.add(createRoleCard("Librarian",
                 "Manage library resources, books, and member services",
                 new Color(80, 170, 120),
-                e -> launchLibrarianApp()));
+                e -> showRoleSnackBarAndLaunch("Launching Librarian application...", () -> launchLibrarianApp())));
 
         mainPanel.add(cardsPanel);
         mainPanel.add(Box.createVerticalGlue());
@@ -127,9 +125,6 @@ public class RoleSelectorFrame extends JFrame {
         setVisible(true);
     }
 
-    /**
-     * Creates a role selection card with icon, title, description and action button
-     */
     private RoundedPanel createRoleCard(String roleName, String description, Color accentColor, ActionListener action) {
         RoundedPanel card = RoundedPanel.RoundedCard();
         card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
@@ -170,19 +165,50 @@ public class RoleSelectorFrame extends JFrame {
         return card;
     }
 
+    private void showRoleSnackBarAndLaunch(String message, Runnable launchAction) {
+        // First, delay to simulate processing
+        Timer delayTimer = new Timer(800, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Show the snack bar message
+                SnackBar.show(contentPanel, message);
+
+                // Delay the launch to allow the snack bar to be visible
+                Timer launchTimer = new Timer(1500, new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        launchAction.run();
+                    }
+                });
+                launchTimer.setRepeats(false);
+                launchTimer.start();
+            }
+        });
+        delayTimer.setRepeats(false);
+        delayTimer.start();
+    }
+
     private void launchUserApp() {
         dispose(); // Close the selector
-        SwingUtilities.invokeLater(() -> new UserAppFrame());
+        SwingUtilities.invokeLater(() -> new UserAppFrame(this));
     }
 
     private void launchAdminApp() {
         dispose(); // Close the selector
-        SwingUtilities.invokeLater(() -> new AdminAppFrame());
+        SwingUtilities.invokeLater(() -> new AdminAppFrame(this));
     }
 
     private void launchLibrarianApp() {
         dispose(); // Close the selector
-        SwingUtilities.invokeLater(() -> new LibrarianAppFrame());
+        SwingUtilities.invokeLater(() -> new LibrarianAppFrame(this));
+    }
+
+    public void showMessage(String message) {
+        SnackBar.show(contentPanel, message);
+    }
+
+    public void showMessage(String message, int durationMs) {
+        SnackBar.show(contentPanel, message, durationMs);
     }
 
     public static void main(String[] args) {
@@ -196,9 +222,6 @@ public class RoleSelectorFrame extends JFrame {
         SwingUtilities.invokeLater(() -> new RoleSelectorFrame());
     }
 
-    /**
-     * Method to reopen the role selector from other frames
-     */
     public static void reopenRoleSelector() {
         SwingUtilities.invokeLater(() -> new RoleSelectorFrame());
     }

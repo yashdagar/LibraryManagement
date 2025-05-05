@@ -1,4 +1,4 @@
-package screens.Librarian;
+package screens.Librarian.librarianDashboard;
 
 import components.ModernJTable;
 import models.Librarian;

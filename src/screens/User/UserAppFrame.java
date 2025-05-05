@@ -1,5 +1,6 @@
 package screens.User;
 
+import main.RoleSelectorFrame;
 import models.User;
 import services.UserAuthService;
 
@@ -12,10 +13,12 @@ public class UserAppFrame extends JFrame {
     private final UserDashboard userDashboard;
     final UserAuthService dbConnection;
     public User user;
+    public RoleSelectorFrame frame;
 
-    public UserAppFrame() {
+    public UserAppFrame(RoleSelectorFrame roleSelectorFrame) {
+        frame = roleSelectorFrame;
         // Initialize database connection
-        dbConnection = new UserAuthService();
+        dbConnection = new UserAuthService(roleSelectorFrame.databaseManager);
 
         // Set up the frame
         setTitle("User Authentication System");
@@ -57,11 +60,5 @@ public class UserAppFrame extends JFrame {
         userDashboard.setUserInfo(user);
         revalidate();
         repaint();
-    }
-
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            new UserAppFrame();
-        });
     }
 }

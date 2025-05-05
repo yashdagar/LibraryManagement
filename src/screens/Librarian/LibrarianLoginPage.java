@@ -34,7 +34,7 @@ public class LibrarianLoginPage extends JPanel {
         appFrame.setResizable(true);
 
         // Initialize auth service
-        this.authService = new LibrarianAuthService();
+        this.authService = new LibrarianAuthService(appFrame.frame.databaseManager);
 
         // Create main layout with two panels side by side
         setLayout(new GridLayout(1, 2));

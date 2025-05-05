@@ -8,6 +8,7 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 
+import components.RoundedPanelButton;
 import models.Book;
 import screens.User.UserAppFrame;
 import screens.User.userDashboard.searchBooks.BookGridPanel;
@@ -47,7 +48,8 @@ public class SearchBooksPanel extends JPanel {
         this.setBorder(new EmptyBorder(20, 20, 20, 20));
 
         // Initialize database connection
-        userService = new UserAuthService();
+        userService = new UserAuthService(appFrame.frame.databaseManager);
+        this.appFrame = appFrame;
 
         // Create components
         createHeader();
@@ -121,7 +123,7 @@ public class SearchBooksPanel extends JPanel {
         JButton searchButton = new JButton("Search");
         searchButton.setFont(new Font("Arial", Font.BOLD, 14));
         searchButton.setBackground(primaryColor);
-        searchButton.setForeground(Color.WHITE);
+        searchButton.setForeground(Color.BLACK);
         searchButton.setBorder(BorderFactory.createEmptyBorder(8, 15, 8, 15));
         searchButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         searchButton.setFocusPainted(false);
@@ -346,12 +348,14 @@ public class SearchBooksPanel extends JPanel {
 
     private JPanel createBookCard(Book book) {
         JPanel cardPanel = new JPanel();
-        cardPanel.setLayout(new BorderLayout());
+        cardPanel.setLayout(new BorderLayout(10, 0));
         cardPanel.setBackground(cardBackground);
         cardPanel.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(new Color(229, 231, 235), 1),
                 BorderFactory.createEmptyBorder(15, 15, 15, 15)));
-//        cardPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 160));
+        // Set a minimum height to ensure buttons are visible
+        cardPanel.setPreferredSize(new Dimension(Integer.MAX_VALUE, 160));
+        cardPanel.setMinimumSize(new Dimension(100, 160));
 
         // Book info
         JPanel infoPanel = new JPanel();
@@ -395,32 +399,12 @@ public class SearchBooksPanel extends JPanel {
         infoPanel.add(detailsPanel);
 
         // Action buttons
-        JPanel actionPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JPanel actionPanel = new JPanel();
+        actionPanel.setLayout(new GridLayout(2, 1, 0, 10));
         actionPanel.setBackground(cardBackground);
+        actionPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
-        JButton viewDetailsButton = new JButton("View Details");
-        viewDetailsButton.setFont(new Font("Arial", Font.PLAIN, 13));
-        viewDetailsButton.setBackground(new Color(243, 244, 246));
-        viewDetailsButton.setForeground(textColor);
-        viewDetailsButton.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(209, 213, 219), 1),
-                BorderFactory.createEmptyBorder(5, 10, 5, 10)));
-        viewDetailsButton.setFocusPainted(false);
-        viewDetailsButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-
-        JButton borrowButton = null;
-        if(book.isAvailable()) {
-            borrowButton = new JButton("Borrow");
-            borrowButton.setFont(new Font("Arial", Font.BOLD, 13));
-            borrowButton.setBackground(book.isAvailable() ? primaryColor : secondaryColor);
-            borrowButton.setForeground(Color.WHITE);
-            borrowButton.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
-            borrowButton.setFocusPainted(false);
-            borrowButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        }
-
-        // Add action listeners
-        viewDetailsButton.addActionListener(e -> JOptionPane.showMessageDialog(
+        RoundedPanelButton viewDetailsButton = new RoundedPanelButton("View Details","",e ->JOptionPane.showMessageDialog(
                 this,
                 "Book Details:\n\n" +
                         "Title: " + book.getName() + "\n" +
@@ -429,48 +413,51 @@ public class SearchBooksPanel extends JPanel {
                         "Description: " + book.getDescription() + "\n" +
                         "Status: " + (book.isAvailable() ? "Available (" + book.getQuantity() + " in stock)" : "Out of Stock"),
                 "Book Details",
-                JOptionPane.INFORMATION_MESSAGE
-        ));
-
-        if(borrowButton != null) {
-            borrowButton.addActionListener(e -> {
-                if (book.isAvailable()) {
-                    int confirm = JOptionPane.showConfirmDialog(
+                JOptionPane.INFORMATION_MESSAGE ));
+        RoundedPanelButton borrowButton = new RoundedPanelButton("Borrow","",e->{if (book.isAvailable()) {
+            int confirm = JOptionPane.showConfirmDialog(
+                    this,
+                    "Would you like to borrow '" + book.getName() + "'?",
+                    "Confirm Borrow",
+                    JOptionPane.YES_NO_OPTION
+            );
+            if (confirm == JOptionPane.YES_OPTION) {
+                // Call database to update book quantity
+                if (userService.borrowBook(book.getId(), appFrame.user.id)) {
+                    book.decrementQuantity();
+                    JOptionPane.showMessageDialog(
                             this,
-                            "Would you like to borrow '" + book.getName() + "'?",
-                            "Confirm Borrow",
-                            JOptionPane.YES_NO_OPTION
+                            "You have successfully borrowed '" + book.getName() + "'.",
+                            "Success",
+                            JOptionPane.INFORMATION_MESSAGE
                     );
-                    if (confirm == JOptionPane.YES_OPTION) {
-                        // Call database to update book quantity
-                        if (userService.borrowBook(book.getId(), appFrame.user.id)) {
-                            book.decrementQuantity();
-                            JOptionPane.showMessageDialog(
-                                    this,
-                                    "You have successfully borrowed '" + book.getName() + "'.",
-                                    "Success",
-                                    JOptionPane.INFORMATION_MESSAGE
-                            );
-                            performSearch(); // Refresh results
-                        } else {
-                            JOptionPane.showMessageDialog(
-                                    this,
-                                    "Failed to borrow book. Please try again later.",
-                                    "Error",
-                                    JOptionPane.ERROR_MESSAGE
-                            );
-                        }
-                    }
+                    performSearch(); // Refresh results
+                } else {
+                    JOptionPane.showMessageDialog(
+                            this,
+                            "Failed to borrow book. Please try again later.",
+                            "Error",
+                            JOptionPane.ERROR_MESSAGE
+                    );
                 }
-            });
+            }
         }
+        });
 
+
+        // Add buttons to action panel - now in grid layout, one button per row
         actionPanel.add(viewDetailsButton);
         actionPanel.add(borrowButton);
 
+        // Wrap action panel in a container to control its width
+        JPanel actionContainer = new JPanel(new BorderLayout());
+        actionContainer.setBackground(cardBackground);
+        actionContainer.add(actionPanel, BorderLayout.CENTER);
+        actionContainer.setPreferredSize(new Dimension(150, 0));
+
         // Add panels to card
         cardPanel.add(infoPanel, BorderLayout.CENTER);
-        cardPanel.add(actionPanel, BorderLayout.EAST);
+        cardPanel.add(actionContainer, BorderLayout.EAST);
 
         // Card hover effect
         cardPanel.addMouseListener(new MouseAdapter() {

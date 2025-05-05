@@ -1,14 +1,18 @@
 package services;
 
 import models.Admin;
+import models.Librarian;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 public class AdminAuthService {
     private Connection connection;
 
     public AdminAuthService(DatabaseManager databaseManager) {
+        connection=databaseManager.connection;
         createAdminsTableIfNotExists();
     }
 
@@ -114,4 +118,42 @@ public class AdminAuthService {
         }
     }
 
+    /**
+     * Retrieves all librarians from the database
+     * @return List of all librarians in the system
+     */
+    public List<Librarian> getAllLibrarians() {
+        List<Librarian> librarians = new ArrayList<>();
+
+        try {
+            // Check if connection is valid, reconnect if needed
+            if (connection == null || connection.isClosed()) {
+                createAdminsTableIfNotExists();
+            }
+
+            // Query to get all librarians
+            String query = "SELECT * FROM librarians";
+            PreparedStatement statement = connection.prepareStatement(query);
+            ResultSet resultSet = statement.executeQuery();
+
+            // Process each row in the result set
+            while (resultSet.next()) {
+                Librarian librarian = new Librarian(
+                        resultSet.getString("name"),
+                        resultSet.getString("email"),
+                        resultSet.getString("phone")
+                );
+                librarians.add(librarian);
+            }
+
+            resultSet.close();
+            statement.close();
+
+        } catch (SQLException e) {
+            System.err.println("Failed to retrieve librarians due to database error");
+            e.printStackTrace();
+        }
+
+        return librarians;
+    }
 }

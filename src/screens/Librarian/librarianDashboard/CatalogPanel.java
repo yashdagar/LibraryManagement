@@ -1,4 +1,4 @@
-package screens.Librarian;
+package screens.Librarian.librarianDashboard;
 
 import components.ModernJTable;
 import components.RoundedPanelButton;
@@ -67,8 +67,12 @@ public class CatalogPanel extends JPanel {
         titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
         titleLabel.setForeground(textColor);
 
-        addBookButton = new RoundedPanelButton("Add New Book","",e ->{});
-
+        // Fix for Add New Book button - properly configure it with text, icon and action
+        addBookButton = new RoundedPanelButton("Add New Book", "➕", e -> showAddBookDialog());
+        // Make sure the button is visible with proper styling
+        addBookButton.setPreferredSize(new Dimension(150, 35));
+        addBookButton.setBackground(primaryColor);
+        addBookButton.setForeground(Color.WHITE);
 
         headerPanel.add(titleLabel, BorderLayout.WEST);
         headerPanel.add(addBookButton, BorderLayout.EAST);
@@ -229,6 +233,149 @@ public class CatalogPanel extends JPanel {
         columnModel.getColumn(3).setPreferredWidth(120);   // Category
         columnModel.getColumn(4).setPreferredWidth(80);    // Available
         columnModel.getColumn(5).setPreferredWidth(80);    // Total
+    }
+
+    // Add a method to show the Add Book dialog
+    private void showAddBookDialog() {
+        JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Add New Book", true);
+        dialog.setLayout(new BorderLayout());
+        dialog.setSize(500, 400);
+        dialog.setLocationRelativeTo(this);
+
+        JPanel formPanel = new JPanel();
+        formPanel.setLayout(new GridBagLayout());
+        formPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.insets = new Insets(5, 5, 5, 5);
+
+        // Title field
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        formPanel.add(new JLabel("Title:"), gbc);
+
+        gbc.gridx = 1;
+        gbc.gridy = 0;
+        gbc.weightx = 1.0;
+        JTextField titleField = new JTextField(20);
+        formPanel.add(titleField, gbc);
+
+        // Author field
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        gbc.weightx = 0.0;
+        formPanel.add(new JLabel("Author:"), gbc);
+
+        gbc.gridx = 1;
+        gbc.gridy = 1;
+        gbc.weightx = 1.0;
+        JTextField authorField = new JTextField(20);
+        formPanel.add(authorField, gbc);
+
+        // ISBN field
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        gbc.weightx = 0.0;
+        formPanel.add(new JLabel("ISBN:"), gbc);
+
+        gbc.gridx = 1;
+        gbc.gridy = 2;
+        gbc.weightx = 1.0;
+        JTextField isbnField = new JTextField(20);
+        formPanel.add(isbnField, gbc);
+
+        // Publisher field
+        gbc.gridx = 0;
+        gbc.gridy = 3;
+        gbc.weightx = 0.0;
+        formPanel.add(new JLabel("Publisher:"), gbc);
+
+        gbc.gridx = 1;
+        gbc.gridy = 3;
+        gbc.weightx = 1.0;
+        JTextField publisherField = new JTextField(20);
+        formPanel.add(publisherField, gbc);
+
+        // Year field
+        gbc.gridx = 0;
+        gbc.gridy = 4;
+        gbc.weightx = 0.0;
+        formPanel.add(new JLabel("Publication Year:"), gbc);
+
+        gbc.gridx = 1;
+        gbc.gridy = 4;
+        gbc.weightx = 1.0;
+        JTextField yearField = new JTextField(20);
+        formPanel.add(yearField, gbc);
+
+        // Category field
+        gbc.gridx = 0;
+        gbc.gridy = 5;
+        gbc.weightx = 0.0;
+        formPanel.add(new JLabel("Category:"), gbc);
+
+        gbc.gridx = 1;
+        gbc.gridy = 5;
+        gbc.weightx = 1.0;
+        String[] categories = {"Fiction", "Non-Fiction", "Reference", "Textbook", "Magazine", "Other"};
+        JComboBox<String> categoryComboBox = new JComboBox<>(categories);
+        formPanel.add(categoryComboBox, gbc);
+
+        // Copies field
+        gbc.gridx = 0;
+        gbc.gridy = 6;
+        gbc.weightx = 0.0;
+        formPanel.add(new JLabel("Number of Copies:"), gbc);
+
+        gbc.gridx = 1;
+        gbc.gridy = 6;
+        gbc.weightx = 1.0;
+        SpinnerModel spinnerModel = new SpinnerNumberModel(1, 1, 100, 1);
+        JSpinner copiesSpinner = new JSpinner(spinnerModel);
+        formPanel.add(copiesSpinner, gbc);
+
+        // Button panel
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+
+        JButton cancelButton = new JButton("Cancel");
+        cancelButton.addActionListener(e -> dialog.dispose());
+
+        JButton addButton = new JButton("Add Book");
+        addButton.setBackground(primaryColor);
+        addButton.setForeground(Color.WHITE);
+        addButton.addActionListener(e -> {
+            // Here you would add code to save the book to database
+            // For now, we'll add it to our sample data and refresh the table
+            String newBookId = "BK" + String.format("%03d", bookData.length + 1);
+            String title = titleField.getText();
+            String author = authorField.getText();
+            String category = (String) categoryComboBox.getSelectedItem();
+            String copies = copiesSpinner.getValue().toString();
+
+            // Add to table model
+            tableModel.addRow(new Object[]{
+                    newBookId,
+                    title,
+                    author,
+                    category,
+                    copies, // Available = Total for new books
+                    copies  // Total copies
+            });
+
+            JOptionPane.showMessageDialog(dialog,
+                    "Book \"" + title + "\" has been added successfully!",
+                    "Success",
+                    JOptionPane.INFORMATION_MESSAGE);
+            dialog.dispose();
+        });
+
+        buttonPanel.add(cancelButton);
+        buttonPanel.add(addButton);
+
+        dialog.add(formPanel, BorderLayout.CENTER);
+        dialog.add(buttonPanel, BorderLayout.SOUTH);
+        dialog.setVisible(true);
     }
 
     private void showBookDetailsDialog(String bookId, String title) {

@@ -4,6 +4,7 @@ import main.RoleSelectorFrame;
 import models.Admin;
 import services.AdminAuthService;
 import components.RoundedPanel;
+import services.DatabaseManager;
 
 import javax.swing.*;
 import java.awt.*;
@@ -15,10 +16,12 @@ public class AdminAppFrame extends JFrame {
     private final JPanel mainPanel;
     private final AdminDashboard adminDashboard;
     final AdminAuthService dbConnection;
+    public RoleSelectorFrame frame;
 
-    public AdminAppFrame() {
+    public AdminAppFrame(RoleSelectorFrame roleSelectorFrame) {
         // Initialize database connection
-        dbConnection = new AdminAuthService();
+        frame=roleSelectorFrame;
+        dbConnection = new AdminAuthService(frame.databaseManager);
 
         // Set up the frame - using similar styling as RoleSelectorFrame
         setTitle("System Administration Portal");
@@ -117,16 +120,5 @@ public class AdminAppFrame extends JFrame {
         dispose();
         // Reopen the role selector
         RoleSelectorFrame.reopenRoleSelector();
-    }
-
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            try {
-                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            new AdminAppFrame();
-        });
     }
 }

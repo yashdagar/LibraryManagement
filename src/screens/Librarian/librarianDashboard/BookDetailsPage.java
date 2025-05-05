@@ -1,4 +1,4 @@
-package screens.Librarian;
+package screens.Librarian.librarianDashboard;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;

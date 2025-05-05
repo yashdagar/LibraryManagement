@@ -35,16 +35,17 @@ public class UserDashboard extends JPanel {
 
     public UserDashboard(UserAppFrame appFrame) {
         appFrame.setTitle("LibraryX - User Dashboard");
-        setSize(new Dimension(1200, 1000));
+        appFrame.setSize(new Dimension(1200, 800)); // Set frame size, not panel size
         appFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         appFrame.setLocationRelativeTo(null);
 
         Color backgroundColor = new Color(243, 244, 246);
-        appFrame.getContentPane().setBackground(backgroundColor);
+        setBackground(backgroundColor); // Set background for the panel
 
         // Create main layout
         setLayout(new BorderLayout());
 
+        // Initialize panels
         centerPanel = new JPanel(new CardLayout());
         mainPanel = new MainPanel();
         searchBooksPanel = new SearchBooksPanel(appFrame);
@@ -53,11 +54,13 @@ public class UserDashboard extends JPanel {
         centerPanel.add(mainPanel, "home");
         centerPanel.add(searchBooksPanel, "searchBooks");
 
-        // Add components
+        // Add components to the main panel
         add(createSidebar(), BorderLayout.WEST);
         add(centerPanel, BorderLayout.CENTER);
 
-        setVisible(true);
+        // Add this panel to the frame
+        appFrame.getContentPane().add(this);
+        appFrame.setVisible(true);
     }
 
     private JPanel createSidebar() {
@@ -74,14 +77,10 @@ public class UserDashboard extends JPanel {
         BufferedImage bufferedImage;
         try {
             bufferedImage = ImageIO.read(new File("assets/logo.png"));
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        if(bufferedImage != null) {
             ImageIcon image = new ImageIcon(bufferedImage.getScaledInstance(32, 32, Image.SCALE_DEFAULT));
             logoIcon = new JLabel(image);
-        }
-        else{
+        } catch (Exception e) {
+            // Fallback to text logo if image can't be loaded
             logoIcon = new JLabel("📚");
             logoIcon.setFont(new Font("Arial", Font.PLAIN, 24));
             logoIcon.setForeground(Color.WHITE);
@@ -98,6 +97,7 @@ public class UserDashboard extends JPanel {
         JPanel menuPanel = new JPanel();
         menuPanel.setLayout(new BoxLayout(menuPanel, BoxLayout.Y_AXIS));
         menuPanel.setBackground(primaryColor);
+        menuPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0)); // Add padding
 
         // Create menu items
         String[] menuItemNames = {"Home", "Search Books", "My Borrowings", "Reading History", "Favorites", "Notifications", "Settings"};
@@ -135,7 +135,26 @@ public class UserDashboard extends JPanel {
                                     menuItemNames[index],
                                     JOptionPane.INFORMATION_MESSAGE
                             );
+                            // Reset to home after showing message
+                            cl.show(centerPanel, "home");
+                            for (int j = 0; j < menuItems.length; j++) {
+                                updateMenuItemStyle(menuItems[j], j == 0);
+                            }
                             break;
+                    }
+                }
+
+                @Override
+                public void mouseEntered(MouseEvent e) {
+                    if (!isSelectedMenuItem(index)) {
+                        menuItems[index].setBackground(new Color(79, 70, 229, 200));
+                    }
+                }
+
+                @Override
+                public void mouseExited(MouseEvent e) {
+                    if (!isSelectedMenuItem(index)) {
+                        menuItems[index].setBackground(primaryColor);
                     }
                 }
             });
@@ -166,9 +185,8 @@ public class UserDashboard extends JPanel {
         userInfo.add(userName);
         userInfo.add(userRole);
 
-        profilePanel.add(userIcon);
-        profilePanel.add(spacer());
-        profilePanel.add(userInfo);
+        profilePanel.add(userIcon, BorderLayout.WEST);
+        profilePanel.add(userInfo, BorderLayout.CENTER);
 
         // Add all components to sidebar
         sidebar.add(logoPanel, BorderLayout.NORTH);
@@ -178,9 +196,19 @@ public class UserDashboard extends JPanel {
         return sidebar;
     }
 
+    private boolean isSelectedMenuItem(int index) {
+        for (int i = 0; i < menuItems.length; i++) {
+            JLabel textLabel = (JLabel) menuItems[i].getClientProperty("textLabel");
+            if (textLabel != null && textLabel.getFont().isBold()) {
+                return i == index;
+            }
+        }
+        return false;
+    }
+
     private JPanel createMenuItem(String text, String icon, boolean isSelected) {
         JPanel menuItem = new JPanel(new FlowLayout(FlowLayout.LEFT, 16, 12));
-        menuItem.setMaximumSize(new Dimension(Integer.MAX_VALUE, 45));
+        menuItem.setMaximumSize(new Dimension(220, 45)); // Set explicit width
 
         if (isSelected) {
             menuItem.setBackground(lightPrimaryColor);
@@ -204,22 +232,6 @@ public class UserDashboard extends JPanel {
         // Store the text label as a client property so we can update its font
         menuItem.putClientProperty("textLabel", textLabel);
 
-        menuItem.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                if (!isSelected) {
-                    menuItem.setBackground(new Color(79, 70, 229, 200));
-                }
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                if (!isSelected) {
-                    menuItem.setBackground(primaryColor);
-                }
-            }
-        });
-
         return menuItem;
     }
 
@@ -239,13 +251,9 @@ public class UserDashboard extends JPanel {
         }
     }
 
-    Component spacer(){
-        return Box.createRigidArea(new Dimension(16, 16));
-    }
-
     public void setUserInfo(User user) {
         this.user = user;
-        userName.setText(user.name);
+        userName.setText("Welcome " + user.name + "!");
         revalidate();
         repaint();
     }

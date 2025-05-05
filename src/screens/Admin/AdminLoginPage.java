@@ -34,7 +34,7 @@ public class AdminLoginPage extends JPanel {
         appFrame.setResizable(true);
 
         // Initialize auth service
-        this.authService = new AdminAuthService();
+        this.authService = new AdminAuthService(appFrame.frame.databaseManager);
 
         // Create main layout with two panels side by side
         setLayout(new GridLayout(1, 2));

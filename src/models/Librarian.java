@@ -1,55 +1,41 @@
-
 package models;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Optional;
 
 public class Librarian {
-    public final int userId;
-    public final String staffId, name, approvalStatus, dateHired;
+    public int id=0;
+    public String name;
+    public String email;
+    public String phone;
 
-    public Librarian(int userId, String staffId, String name, String approvalStatus, String dateHired) {
-        this.userId = userId;
-        this.staffId = staffId;
+    public Librarian(int id,String name, String email, String phone) {
+        this.id = id;
         this.name = name;
-        this.approvalStatus = approvalStatus;
-        this.dateHired = dateHired;
+        this.email = email;
+        this.phone = phone;
     }
 
-    public static ArrayList<Librarian> getLibrariansFromResultSet(ResultSet rs) {
-        ArrayList<Librarian> librarians = new ArrayList<>();
+    public static Optional<Librarian> getFromResultSet(ResultSet resultSet) {
+        Librarian librarian = null;
         try {
-            while (rs.next()) {
-                librarians.add(new Librarian(
-                    rs.getInt("user_id"),
-                    rs.getString("staff_id"),
-                    rs.getString("name"),
-                    rs.getString("approval_status"),
-                    rs.getString("date_hired")
-                ));
+            if (resultSet.next()) {
+                librarian = new Librarian(
+                        resultSet.getInt("id"), 
+                        resultSet.getString("name"),
+                        resultSet.getString("email"),
+                        resultSet.getString("phone")
+                );
             }
-        } catch (SQLException e) {
-            System.out.println("Error parsing librarians");
+        } catch(SQLException e) {
+            System.out.println("Error occurred parsing librarian");
+            e.printStackTrace();
         }
-        return librarians;
+        return Optional.ofNullable(librarian);
     }
 
-    public static Optional<Librarian> getFromResultSet(ResultSet rs) {
-        try {
-            if (rs.next()) {
-                return Optional.of(new Librarian(
-                    rs.getInt("user_id"),
-                    rs.getString("staff_id"),
-                    rs.getString("name"),
-                    rs.getString("approval_status"),
-                    rs.getString("date_hired")
-                ));
-            }
-        } catch (SQLException e) {
-            System.out.println("Error parsing librarian");
-        }
-        return Optional.empty();
+    public int getId() {
+        return id;
     }
 }
